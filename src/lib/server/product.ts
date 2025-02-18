@@ -46,6 +46,11 @@ export async function getProducts () {
     return listProducts;
 }
 
+export async function deleteProduct (id: string) {
+    await db.delete(table.img).where(eq(table.img.productId, id));
+    await db.delete(table.product).where(eq(table.product.id, id));
+}
+
 export async function getImgs (productId: string) {
     const imgs = await db.select().from(table.img).where(eq(table.img.productId, productId)).execute();
     return imgs;

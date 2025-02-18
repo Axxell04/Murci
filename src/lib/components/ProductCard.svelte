@@ -2,28 +2,33 @@
 	import { page } from "$app/state";
 	import type { Img, Product, ProductComplete } from "$lib/interfaces/product";
 	import Icon from "@iconify/svelte";
-	import { fade } from "svelte/transition";
+	import { fade, scale } from "svelte/transition";
 
     interface Props {
         product: ProductComplete
-        toggleProductModalIsVisible?: (visible?: boolean) => void
         productSelected?: ProductComplete | undefined
         selectThisProduct?: (product: ProductComplete) => void
+        toggleProductModalIsVisible?: (visible?: boolean) => void
+        toggleDeleteProductModalIsVisible?: (visible?: boolean) => void
     }
 
-    let { product, toggleProductModalIsVisible, productSelected, selectThisProduct }: Props = $props();
+    let { product, toggleProductModalIsVisible, toggleDeleteProductModalIsVisible, productSelected, selectThisProduct }: Props = $props();
 
     let actualRoute = $derived(page.route.id);
+    let isSelected = $derived(product.product.id === productSelected?.product.id);
 
     if (!toggleProductModalIsVisible) {
         toggleProductModalIsVisible = () => {};
     }
-    if (!productSelected) {
-        productSelected = undefined;
+    if (!toggleDeleteProductModalIsVisible) {
+        toggleDeleteProductModalIsVisible = () => {};
     }
+    
     if (!selectThisProduct) {
         selectThisProduct = () => {};
     }
+
+
 
 </script>
 
@@ -44,12 +49,14 @@
             {`${product.product.price ?? 9.99} $`}
         </p>
     </div>
-    <div class="absolute top-2 right-2 flex flex-col place-items-center gap-2 p-2 text-4xl bg-stone-900/90 backdrop-blur-xl rounded-md">
-        <button class="cursor-pointer hover:text-red-500">
+    {#if isSelected && actualRoute?.includes('/admin')}        
+    <div transition:scale class="absolute top-2 right-2 flex flex-col place-items-center gap-2 p-2 text-4xl bg-stone-900/90 backdrop-blur-xl rounded-md">
+        <button class="cursor-pointer hover:text-red-500" onclick={()=>toggleDeleteProductModalIsVisible(true)}>
             <Icon icon="famicons:trash" />
         </button>
         <button class="cursor-pointer hover:text-red-500">
             <Icon icon="mdi:edit-outline" />
         </button>
     </div>
+    {/if}
 </div>

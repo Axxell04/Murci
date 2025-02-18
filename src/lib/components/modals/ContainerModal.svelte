@@ -12,7 +12,7 @@
 </script>
 
 <div role="button" tabindex="0" onkeydown={()=>{}}
-    class="fixed top-0 left-0 p-4 w-full h-dvh box-border bg-stone-900/60 backdrop-blur-md overflow-hidden flex flex-col place-items-center place-content-center" 
+    class="fixed top-0 left-0 z-50 p-4 w-full h-dvh box-border bg-stone-900/60 backdrop-blur-md overflow-hidden flex flex-col place-items-center place-content-center" 
     onclick={()=>toggleModal(false)}    
 >
     {#if !cancelClick}

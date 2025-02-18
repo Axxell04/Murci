@@ -1,7 +1,7 @@
 import * as auth from '$lib/server/auth';
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { createProduct, getProducts } from '$lib/server/product';
+import { createProduct, deleteProduct, getProducts } from '$lib/server/product';
 
 export const load: PageServerLoad = async (event) => {
     if (!event.locals.user) {
@@ -50,7 +50,23 @@ export const actions: Actions = {
 
         const products = await getProducts();
         return {products: products};
-    } 
+    },
+    delete_product: async (event) => {
+        const formData = await event.request.formData();
+        const productId = formData.get('product_id');
+
+        try {
+            await deleteProduct(productId as string);
+        } catch (error) {
+            console.log(error);
+            return fail(500, { message: 'Internal server error' })
+        }
+        
+        const products = await getProducts();
+        return {
+            products: products
+        }
+    }
 }
 
 function validatePrice (price: unknown): price is number {

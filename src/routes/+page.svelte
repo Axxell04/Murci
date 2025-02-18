@@ -48,12 +48,12 @@
 </script>
 
 <div in:fade class="flex flex-col gap-2 max-w-full max-h-full">
-    <section class="px-10 w-full sticky top-0 bg-stone-900/95 backdrop-blur-lg">
+    <section class="px-10 w-full sticky top-0 z-10 bg-stone-900/95 backdrop-blur-lg">
         <div class="flex flex-wrap gap-3 justify-center  text-center text-red-400 font-normal p-4 border border-transparent border-b-red-400">
-            <span class="block self-center">
-                Todo
-            </span>
             <div class="flex flex-row gap-2 place-items-center">
+                <span class="block align-middle">
+                    Todo
+                </span>
                 <button class="hover:text-red-500">
                     <Icon icon="icon-park-outline:left-c" class="text-3xl" />
                 </button>
@@ -66,7 +66,7 @@
                 </button>
             </div>
             <div class="flex flex-row flex-grow place-content-end">
-                <a href="/carrito" class="flex flex-row gap-1 justify-end place-items-center hover:text-red-500">
+                <a href="/carrito" class="flex flex-row gap-1 justify-end self-end place-items-center hover:text-red-500">
                     <div class="relative flex flex-col place-items-center">
                         <Icon icon="bi:cart-fill" class="text-4xl" />
                         <span class="block absolute -top-2 -right-2 rounded-full font-bold text-lg bg-stone-900 text-red-400 border border-red-400 px-2 ">

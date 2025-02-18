@@ -7,15 +7,30 @@
 	import type { ProductComplete } from "$lib/interfaces/product";
 	import Icon from "@iconify/svelte";
 	import AddProductModal from "$lib/components/modals/admin/AddProductModal.svelte";
+	import DeleteProductModal from "$lib/components/modals/admin/DeleteProductModal.svelte";
 
     let { data, form }: PageProps = $props();
 
     //console.log(data.products);
 
+    let formAct = $derived(form);
+    let messages = $derived(form?.message);
+
+    $inspect(formAct);
+    $inspect(messages);
+
     let products: ProductComplete[] = $state(data.products); 
 
     // Visible Elements
     let addProductModalIsVisible = $state(false);
+    let deleteProductModalIsVisible = $state(false);
+
+    // Selected Product
+    let productSelected: ProductComplete | undefined = $state()
+
+    function selectThisProduct (product: ProductComplete) {
+        productSelected = product;
+    }
 
     function setProducts (newProducts: ProductComplete[]) {
         products = newProducts;
@@ -29,12 +44,19 @@
             addProductModalIsVisible = !addProductModalIsVisible;
         }
     }
+    function toggleDeleteProductModalIsVisible (visible?: boolean) {
+        if (typeof visible !== "undefined") {
+            deleteProductModalIsVisible = visible;
+        } else {
+            deleteProductModalIsVisible = !deleteProductModalIsVisible;
+        }
+    }
 
 </script>
 
 <div in:fade class="flex flex-col gap-2 px-5 py-5">
     <section class="flex flex-col gap-3 ">
-        <div class="sticky top-0 bg-stone-900/95 backdrop-blur-md place-content-around flex flex-row p-3 gap-2 place-items-center">
+        <div class="sticky top-0 z-10 bg-stone-900/95 backdrop-blur-md place-content-around flex flex-row p-3 gap-2 place-items-center">
             <button class="flex flex-row gap-1 border rounded-md p-1 hover:text-red-500 cursor-pointer place-items-center"
             onclick={() => toggleAddProductModalIsVisible(true)}
             >
@@ -58,9 +80,10 @@
 
         <div class="flex flex-wrap grow justify-center p-2 gap-3">
             {#each products as product}
-                <ProductCard {product} />
+                <ProductCard {product} {productSelected} {selectThisProduct} {toggleDeleteProductModalIsVisible} />
             {/each}
         </div>
     </section>
-    <AddProductModal {form} {setProducts} {toggleAddProductModalIsVisible} {addProductModalIsVisible} />
+    <AddProductModal form={formAct} {setProducts} {toggleAddProductModalIsVisible} {addProductModalIsVisible} />
+    <DeleteProductModal form={formAct} {setProducts} {toggleDeleteProductModalIsVisible} {deleteProductModalIsVisible} {productSelected} />
 </div>
