@@ -4,14 +4,22 @@
     interface Props {
         children: Snippet
         toggleModal: (visible?: boolean) => void
+        cancelClick?: boolean
     }
 
-    let { children, toggleModal }: Props = $props();
+    let { children, toggleModal, cancelClick }: Props = $props();
 
 </script>
 
-<button class="fixed top-0 left-0 p-4 w-full h-dvh box-border bg-stone-900/60 backdrop-blur-md overflow-hidden flex flex-col place-items-center place-content-center" 
+<div role="button" tabindex="0" onkeydown={()=>{}}
+    class="fixed top-0 left-0 p-4 w-full h-dvh box-border bg-stone-900/60 backdrop-blur-md overflow-hidden flex flex-col place-items-center place-content-center" 
     onclick={()=>toggleModal(false)}    
 >
+    {#if !cancelClick}
     {@render children()}
-</button>
+    {:else}
+    <div onclick={(e) => e.stopPropagation()} role="button" tabindex="0" onkeypress={()=>{}} class="outline-none">
+        {@render children()}
+    </div>
+    {/if}
+</div>

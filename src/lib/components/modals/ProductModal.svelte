@@ -3,12 +3,12 @@
 
 
 	import ContainerModal from "./ContainerModal.svelte";
-	import type { Product } from "$lib/interfaces/product";
+	import type { ProductComplete } from "$lib/interfaces/product";
 
     interface Props {
         productModalIsVisible: boolean
         toggleProductModalIsVisible: (visible?: boolean) => void
-        productSelected: Product | undefined
+        productSelected: ProductComplete | undefined
     }
 
     let { toggleProductModalIsVisible, productModalIsVisible, productSelected }: Props = $props()
@@ -19,7 +19,7 @@
 <div transition:fade={{duration: 200}}>
 <ContainerModal toggleModal={toggleProductModalIsVisible}>
     <div >
-        <img src={productSelected?.img} alt={productSelected?.name} loading="lazy">
+        <img src={productSelected?.imgs[0].url} alt={productSelected?.product.name} loading="lazy">
     </div>
 </ContainerModal>
 </div>

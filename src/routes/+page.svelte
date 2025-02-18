@@ -6,15 +6,15 @@
 	import type { PageProps } from "./$types";
 	import ContainerModal from "$lib/components/modals/ContainerModal.svelte";
 	import ProductModal from "$lib/components/modals/ProductModal.svelte";
-	import type { Product } from "$lib/interfaces/product";
+	import type { Product, ProductComplete } from "$lib/interfaces/product";
 	import Icon from "@iconify/svelte";
 
     let { data }: PageProps = $props();
 
     // Selected Elements
-    let productSelected: Product | undefined = $state() 
+    let productSelected: ProductComplete | undefined = $state() 
 
-    function selectThisProduct (product: Product) {
+    function selectThisProduct (product: ProductComplete) {
         productSelected = product;
 
         toggleProductModalIsVisible(true);

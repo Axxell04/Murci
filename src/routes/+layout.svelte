@@ -11,11 +11,12 @@
 	let actualRoute = $derived(page.route.id);
 
 	function validityAnchor (endPoint: string) {
-		if (data.user) {
-			return "/admin" + endPoint;
-		} else {
-			return endPoint;
+		if (data.user && actualRoute) {
+			if (actualRoute.includes("/admin")) {
+				return "/admin" + (endPoint === "/" ? "" : endPoint);
+			}
 		}
+		return endPoint;
 	}
 
 	// $inspect(actualRoute);
@@ -24,12 +25,15 @@
 <nav class="flex flex-col place-items-center gap-4 flex-grow">
 	<section class="relative flex place-content-center">
 		<h1 class="text-red-500 font-black text-4xl p-3">
-			murci
+			<a href="/">
+				murci
+			</a>
 		</h1>
 		<button class="text-5xl absolute -bottom-4 " onclick={() => goto('/admin')}>
 			<Icon icon="mdi:bat" />
 		</button>
 	</section>
+	{#if data.user}
 	<section class="flex flex-row gap-4 px-2">
 		<ul class="flex flex-row gap-10 text-red-500 font-semibold place-items-center">
 			<li class="flex flex-row gap-2">
@@ -47,6 +51,7 @@
 			</li>
 		</ul>
 	</section>
+	{/if}
 	<section class="flex flex-row gap-4 px-2 py-1">
 		<ul class="flex flex-row gap-2 text-red-500 font-semibold">
 			<NavItem name="Catálogo" endPoint={validityAnchor("/catalogo")} {actualRoute} />

@@ -17,7 +17,7 @@ export const actions: Actions = {
         }
         
         try {
-            await createProduct(name, price)
+            await createProduct(name, price, new FileList());
 
         } catch {
             return fail(500, { message: 'Internal server error' });
@@ -28,7 +28,7 @@ export const actions: Actions = {
 }
 
 function validatePrice (price: unknown): price is number {
-    return !isNaN(parseInt(price as string));
+    return !isNaN(parseFloat(price as string));
 }
 
 function validateName (name: unknown): name is string {
