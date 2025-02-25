@@ -8,6 +8,7 @@
 	import Icon from "@iconify/svelte";
 	import AddProductModal from "$lib/components/modals/admin/AddProductModal.svelte";
 	import DeleteProductModal from "$lib/components/modals/admin/DeleteProductModal.svelte";
+	import EditProductModal from "$lib/components/modals/admin/EditProductModal.svelte";
 
     let { data, form }: PageProps = $props();
 
@@ -16,14 +17,15 @@
     let formAct = $derived(form);
     let messages = $derived(form?.message);
 
-    $inspect(formAct);
-    $inspect(messages);
+    // $inspect(formAct);
+    // $inspect(messages);
 
     let products: ProductComplete[] = $state(data.products); 
 
     // Visible Elements
     let addProductModalIsVisible = $state(false);
     let deleteProductModalIsVisible = $state(false);
+    let editProductModalIsVisible = $state(false);
 
     // Selected Product
     let productSelected: ProductComplete | undefined = $state()
@@ -49,6 +51,13 @@
             deleteProductModalIsVisible = visible;
         } else {
             deleteProductModalIsVisible = !deleteProductModalIsVisible;
+        }
+    }
+    function toggleEditProductModalIsVisible (visible?: boolean) {
+        if (typeof visible !== "undefined") {
+            editProductModalIsVisible = visible;
+        } else {
+            editProductModalIsVisible = !editProductModalIsVisible;
         }
     }
 
@@ -80,10 +89,11 @@
 
         <div class="flex flex-wrap grow justify-center p-2 gap-3">
             {#each products as product}
-                <ProductCard {product} {productSelected} {selectThisProduct} {toggleDeleteProductModalIsVisible} />
+                <ProductCard {product} {productSelected} {selectThisProduct} {toggleDeleteProductModalIsVisible} {toggleEditProductModalIsVisible} />
             {/each}
         </div>
     </section>
     <AddProductModal form={formAct} {setProducts} {toggleAddProductModalIsVisible} {addProductModalIsVisible} />
     <DeleteProductModal form={formAct} {setProducts} {toggleDeleteProductModalIsVisible} {deleteProductModalIsVisible} {productSelected} />
+    <EditProductModal form={formAct} {setProducts} {toggleEditProductModalIsVisible} {editProductModalIsVisible} {productSelected} />
 </div>

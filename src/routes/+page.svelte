@@ -8,6 +8,7 @@
 	import ProductModal from "$lib/components/modals/ProductModal.svelte";
 	import type { Product, ProductComplete } from "$lib/interfaces/product";
 	import Icon from "@iconify/svelte";
+	import ImgsProductModal from "$lib/components/modals/ImgsProductModal.svelte";
 
     let { data }: PageProps = $props();
 
@@ -84,4 +85,5 @@
     </section>
 </div>
 
-<ProductModal {productModalIsVisible} {toggleProductModalIsVisible} {productSelected} />
+<!-- <ProductModal {productModalIsVisible} {toggleProductModalIsVisible} {productSelected} /> -->
+<ImgsProductModal {productSelected} imgsProductModalIsVisible={productModalIsVisible} toggleImgsProductModalIsVisible={toggleProductModalIsVisible} />

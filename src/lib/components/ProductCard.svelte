@@ -10,9 +10,10 @@
         selectThisProduct?: (product: ProductComplete) => void
         toggleProductModalIsVisible?: (visible?: boolean) => void
         toggleDeleteProductModalIsVisible?: (visible?: boolean) => void
+        toggleEditProductModalIsVisible?: (visible?: boolean) => void
     }
 
-    let { product, toggleProductModalIsVisible, toggleDeleteProductModalIsVisible, productSelected, selectThisProduct }: Props = $props();
+    let { product, toggleProductModalIsVisible, toggleDeleteProductModalIsVisible, toggleEditProductModalIsVisible, productSelected, selectThisProduct }: Props = $props();
 
     let actualRoute = $derived(page.route.id);
     let isSelected = $derived(product.product.id === productSelected?.product.id);
@@ -22,6 +23,9 @@
     }
     if (!toggleDeleteProductModalIsVisible) {
         toggleDeleteProductModalIsVisible = () => {};
+    }
+    if (!toggleEditProductModalIsVisible) {
+        toggleEditProductModalIsVisible = () => {};
     }
     
     if (!selectThisProduct) {
@@ -54,7 +58,7 @@
         <button class="cursor-pointer hover:text-red-500" onclick={()=>toggleDeleteProductModalIsVisible(true)}>
             <Icon icon="famicons:trash" />
         </button>
-        <button class="cursor-pointer hover:text-red-500">
+        <button class="cursor-pointer hover:text-red-500" onclick={()=>toggleEditProductModalIsVisible(true)}>
             <Icon icon="mdi:edit-outline" />
         </button>
     </div>
