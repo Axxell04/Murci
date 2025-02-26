@@ -9,7 +9,7 @@
 	import type { Snippet } from "svelte";
 
     interface Props {
-        children: Snippet
+        children?: Snippet
         productSelected?: ProductComplete
         toggleImgsProductModalIsVisible: (visible?: boolean) => void
         imgsProductModalIsVisible: boolean
@@ -77,36 +77,47 @@
 {#if imgsProductModalIsVisible }
     <div transition:fade={{duration: 200}}>
         <ContainerModal toggleModal={toggleImgsProductModalIsVisible} cancelClick={true}>
-            {#if !imgSalt}
-            <div in:scale class="flex flex-col relative place-items-center">
-                <img src={productSelected?.imgs[imgIndex].url} alt={productSelected?.product.name} loading="lazy">
-                <span class="absolute bottom-1 bg-stone-900/80 backdrop-blur-md rounded-full py-1 px-3">
-                    {imgIndex + 1} / {productSelected?.imgs.length ?? imgIndex + 1}
-                </span>
-            </div>
-            {/if}
-            <div class="flex flex-row gap-5 rounded-full bg-stone-900 mt-3 p-3 place-items-center">
-                <div class="flex flex-row grow gap-2 place-items-center">
-                    {@render children()}
+            <div class="flex flex-col max-h-full gap-9 box-border relative">
+                <div class="flex flex-col relative box-border grow" style="height: 80%;">
+                    {#if !imgSalt}
+                    <div in:scale class="flex flex-col  max-h-full relative place-items-center box-border">
+                        <div class="relative max-h-full box-border">
+                            <img class=" object-contain relative box-border max-h-[26rem]" src={productSelected?.imgs[imgIndex].url} alt={productSelected?.product.name} loading="lazy" 
+                            draggable="false"
+                            
+                            >
+                        </div>
+                        <span class="absolute bottom-1 bg-stone-900/80 backdrop-blur-md rounded-full py-1 px-3">
+                            {imgIndex + 1} / {productSelected?.imgs.length ?? imgIndex + 1}
+                        </span>
+                    </div>
+                    {/if}
                 </div>
-                <div class="flex flex-row gap-3 text-3xl">
-                    <button class="border rounded-full p-1 cursor-pointer {prevImgIsValid() ? 'hover:text-red-500 hover:border-red-500': 'opacity-50'}"
-                    onclick={prevImg}
-                    >
-                        <Icon icon="mingcute:left-fill" />
-                    </button>
-                    <button class="border rounded-full p-1 cursor-pointer {nextImgIsValid() ? 'hover:text-red-500 hover:border-red-500': 'opacity-50'}"
-                    onclick={nextImg}
-                    >
-                        <Icon icon="mingcute:right-fill" />
-                    </button>
-                </div>
-                <div class="flex flex-row place-items-center ml-auto">
-                    <button class="border rounded-full cursor-pointer p-1 hover:text-red-500 hover:border-red-500"
-                    onclick={closeModal}
-                    >
-                        <Icon icon="material-symbols:close-rounded" class="text-3xl" />
-                    </button>
+                <div class="flex flex-row gap-5 grow rounded-full bg-stone-900 p-3 place-items-center">
+                    {#if typeof children !== 'undefined'}
+                    <div class="flex flex-row grow gap-2 place-items-center">
+                        {@render children()}
+                    </div>
+                    {/if}
+                    <div class="flex flex-row gap-3 text-3xl">
+                        <button class="border rounded-full p-1 cursor-pointer {prevImgIsValid() ? 'hover:text-red-500 hover:border-red-500': 'opacity-50'}"
+                        onclick={prevImg}
+                        >
+                            <Icon icon="mingcute:left-fill" />
+                        </button>
+                        <button class="border rounded-full p-1 cursor-pointer {nextImgIsValid() ? 'hover:text-red-500 hover:border-red-500': 'opacity-50'}"
+                        onclick={nextImg}
+                        >
+                            <Icon icon="mingcute:right-fill" />
+                        </button>
+                    </div>
+                    <div class="flex flex-row place-items-center ml-auto">
+                        <button class="border rounded-full cursor-pointer p-1 hover:text-red-500 hover:border-red-500"
+                        onclick={closeModal}
+                        >
+                            <Icon icon="material-symbols:close-rounded" class="text-3xl" />
+                        </button>
+                    </div>
                 </div>
             </div>
         </ContainerModal>

@@ -8,6 +8,7 @@
 	import Icon from "@iconify/svelte";
 	import ImgsProductModal from "../ImgsProductModal.svelte";
 	import ImgsEditProductModal from "./ImgsEditProductModal.svelte";
+	import { onDestroy } from "svelte";
 
     interface Props {
         form: ActionData
@@ -24,7 +25,7 @@
 
     let listDelete: number[] = $state([]);
 
-    let listDeleteToForm: string[] = $derived(!productSelected ? [] : [...productSelected?.imgs.filter((img) => {
+    let listDeleteToForm: string[] = $derived(!productSelected || !listDelete.length ? [] : [...productSelected?.imgs.filter((img) => {
         if (listDelete.includes(productSelected.imgs.indexOf(img))) {
             return true
         } else {
@@ -52,6 +53,7 @@
     }
 
     $inspect(listDeleteToForm);
+    $inspect(listDelete);
     $effect(() => {
         if (formMessage) {
             setTimeout(() => {
@@ -59,6 +61,16 @@
             }, 5000)
         }
     })
+
+    $effect(() => {
+        if (!editProductModalIsVisible) {
+            clearList();
+        }
+    })
+
+    // onDestroy(() => {
+    //     clearList()
+    // })
 
 </script>
 
@@ -135,7 +147,7 @@
                     </div>
                     {/if}
                     <div role="button" tabindex="0" onkeydown={()=>{}}
-                    class="absolute top-2 right-2 hover:text-red-500 cursor-pointer" onclick="{() => toggleEditProductModalIsVisible(false)}">
+                    class="absolute top-2 right-2 hover:text-red-500 cursor-pointer" onclick="{() => {toggleEditProductModalIsVisible(false)}}">
                         <Icon icon="material-symbols:close-rounded" class="text-3xl" />
                     </div>
                 </form>

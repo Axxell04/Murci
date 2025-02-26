@@ -2,7 +2,7 @@
 
 	import { enhance } from "$app/forms";
 	import type { ProductComplete } from "$lib/interfaces/product";
-	import { fade } from "svelte/transition";
+	import { fade, scale } from "svelte/transition";
 	import type { ActionData } from "../../../../routes/admin/$types";
 	import ContainerModal from "../ContainerModal.svelte";
 	import Icon from "@iconify/svelte";
@@ -16,6 +16,16 @@
 
     let { form, setProducts, toggleAddProductModalIsVisible, addProductModalIsVisible }: Props = $props();
 
+    let formMessage = $state('');
+
+    $effect(() => {
+        if (formMessage) {
+            setTimeout(() => {
+                formMessage = '';
+            }, 5000)
+        }
+    })
+
 </script>
 
 {#if addProductModalIsVisible }
@@ -23,6 +33,11 @@
         <ContainerModal toggleModal={toggleAddProductModalIsVisible} cancelClick={true}>
                 <form id="add-product" action="?/add_product" method="post" use:enhance={({formElement, formData, action, cancel}) => {
                     return async ({ result }) => {
+                        if (result.type === "failure") {
+                            if (result.data?.message) {
+                                formMessage = result.data.message as string;
+                            }
+                        }
                         if (result.type === "success") {
                             formElement.reset();
                             if (result.data?.products) {
@@ -60,11 +75,13 @@
                             Agregar
                         </button>
                     </div>
-                    <div>
+                    {#if formMessage}
+                    <div transition:scale>
                         <p class="text-red-400 text-center">
-                            {form?.message ?? ""}
+                            {formMessage}
                         </p>
                     </div>
+                    {/if}
                     <div role="button" tabindex="0" onkeydown={()=>{}}
                     class="absolute top-2 right-2 hover:text-red-500 cursor-pointer" onclick="{() => toggleAddProductModalIsVisible(false)}">
                         <Icon icon="material-symbols:close-rounded" class="text-3xl" />
