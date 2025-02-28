@@ -1,10 +1,10 @@
 <script lang="ts">
     import { enhance } from "$app/forms";
-	import { fade } from "svelte/transition";
+	import { fade, scale } from "svelte/transition";
 	import type { PageProps } from "./$types";
 	import ProductCard from "$lib/components/ProductCard.svelte";
 	import { goto, invalidate, invalidateAll } from "$app/navigation";
-	import type { ProductComplete } from "$lib/interfaces/product";
+	import type { ProductComplete, ProductPagination } from "$lib/interfaces/product";
 	import Icon from "@iconify/svelte";
 	import AddProductModal from "$lib/components/modals/admin/AddProductModal.svelte";
 	import DeleteProductModal from "$lib/components/modals/admin/DeleteProductModal.svelte";
@@ -12,7 +12,7 @@
 
     let { data, form }: PageProps = $props();
 
-    //console.log(data.products);
+    // console.log(data.pagination);
 
     let formAct = $derived(form);
     let messages = $derived(form?.message);
@@ -20,12 +20,17 @@
     // $inspect(formAct);
     // $inspect(messages);
 
-    let products: ProductComplete[] = $state(data.products); 
+    // Pagination Data
+    let productPagination: ProductPagination = $state(data.pagination);
+    let products: ProductComplete[] = $derived(productPagination.products); 
+
+    let gotoPage: number | undefined = $state();
 
     // Visible Elements
     let addProductModalIsVisible = $state(false);
     let deleteProductModalIsVisible = $state(false);
     let editProductModalIsVisible = $state(false);
+    let gotoPageListIsVisible = $state(false);
 
     // Selected Product
     let productSelected: ProductComplete | undefined = $state()
@@ -34,8 +39,8 @@
         productSelected = product;
     }
 
-    function setProducts (newProducts: ProductComplete[]) {
-        products = newProducts;
+    function setProductPagination (newProductPagination: ProductPagination) {
+        productPagination = newProductPagination;
     }
 
     // Toggle Visible Elements
@@ -60,6 +65,31 @@
             editProductModalIsVisible = !editProductModalIsVisible;
         }
     }
+    function toggleGotoPageListIsVisible (visible?: boolean) {
+        if (typeof visible !== "undefined") {
+            gotoPageListIsVisible = visible;
+        } else {
+            gotoPageListIsVisible = !gotoPageListIsVisible;
+        }
+    }
+
+    function createListPages (totalPages: number) {
+        let list = []
+        for (let index = 1; index <= totalPages; index++) {
+            list.push(index);
+        }
+
+        return list;
+    }
+    
+
+    // Effects
+
+    $effect(() => {
+        productPagination;
+        scrollTo({behavior: 'smooth', top: 170})
+    })
+    
 
 </script>
 
@@ -76,13 +106,82 @@
             </button>
             
             <div class="flex flex-row gap-2 place-items-center">
-                <button class="hover:text-red-500">
-                    <Icon icon="icon-park-outline:left-c" class="text-3xl" />
-                </button>
-                <input type="text" class="w-10 text-center text-3xl bg-transparent outline-none" value="1" />
-                <button class="hover:text-red-500">
-                    <Icon icon="icon-park-outline:right-c" class="text-3xl" />
-                </button>
+                <form action="?/prev_page" method="post" use:enhance={() => {
+                    return async ({ result }) => {
+                        if (result.type === "success") {
+                            if (result.data?.pagination) {
+                                setProductPagination(result.data.pagination as ProductPagination)
+                            }
+                        }
+                    }
+                }}
+                >
+                    <input type="number" hidden name="current_page" value={productPagination.currentPage}>
+                    <input type="number" hidden name="total_pages" value={productPagination.totalPages}>
+                    {#if productPagination.currentPage > 1}
+                    <button class="hover:text-red-500">
+                        <Icon icon="icon-park-outline:left-c" class="text-3xl" />
+                    </button>
+                    {:else}
+                    <button class="opacity-50" disabled>
+                        <Icon icon="icon-park-outline:left-c" class="text-3xl" />
+                    </button>
+                    {/if}
+                </form>
+                <!-- <input type="text" class="w-10 text-center text-3xl bg-transparent outline-none" value={productPagination.currentPage ?? 1} /> -->
+                <form action="?/goto_page" method="post" use:enhance={() => {
+                    return async ({ result }) => {
+                        if (result.type === "success") {
+                            if (result.data?.pagination) {
+                                setProductPagination(result.data.pagination as ProductPagination);
+                                gotoPage = undefined;
+                            }
+                        }
+                    }
+                }}
+                class="flex flex-col place-content-center relative"
+                >
+                    <input type="number" hidden name="goto_page" value={gotoPage} >
+                    <!-- <input type="text" class="w-10 text-center text-3xl bg-transparent outline-none" value={productPagination.currentPage} oninput={(e)=>updatePagination(e)} /> -->
+                    <button type="button" class="w-10 text-center text-3xl bg-transparent outline-none" onclick={()=>toggleGotoPageListIsVisible()}>
+                        {productPagination.currentPage}
+                    </button>
+                    {#if gotoPageListIsVisible}                        
+                    <div transition:scale class="absolute -bottom-20 flex flex-col text-3xl rounded-b-md border bg-stone-900/95 h-20 overflow-y-auto place-self-center">
+                        <ul>
+                            {#each createListPages(productPagination.totalPages) as page}
+                            <li>
+                                <button class="hover:bg-stone-800 px-2 py-1 w-full" onclick={()=>{gotoPage = page; toggleGotoPageListIsVisible(false)}}>
+                                    {page}
+                                </button>
+                            </li>
+                            {/each}
+                        </ul>
+                    </div>
+                    {/if}
+                </form>
+                <form action="?/next_page" method="post" use:enhance={() => {
+                    return async ({ result }) => {
+                        if (result.type === "success") {
+                            if (result.data?.pagination) {
+                                setProductPagination(result.data.pagination as ProductPagination);
+                            }
+                        }
+                    }
+                }}
+                >
+                    <input type="number" hidden name="current_page" value={productPagination.currentPage}>
+                    <input type="number" hidden name="total_pages" value={productPagination.totalPages}>
+                    {#if productPagination.currentPage < productPagination.totalPages}
+                    <button class="hover:text-red-500">
+                        <Icon icon="icon-park-outline:right-c" class="text-3xl" />
+                    </button>
+                    {:else}    
+                    <button class="opacity-50" disabled>
+                        <Icon icon="icon-park-outline:right-c" class="text-3xl" />
+                    </button>
+                    {/if}
+                </form>
             </div>
 
         </div>
@@ -93,7 +192,7 @@
             {/each}
         </div>
     </section>
-    <AddProductModal form={formAct} {setProducts} {toggleAddProductModalIsVisible} {addProductModalIsVisible} />
-    <DeleteProductModal form={formAct} {setProducts} {toggleDeleteProductModalIsVisible} {deleteProductModalIsVisible} {productSelected} />
-    <EditProductModal form={formAct} {setProducts} {toggleEditProductModalIsVisible} {editProductModalIsVisible} {productSelected} />
+    <AddProductModal form={formAct} {setProductPagination} {toggleAddProductModalIsVisible} {addProductModalIsVisible} />
+    <DeleteProductModal form={formAct} {setProductPagination} {toggleDeleteProductModalIsVisible} {deleteProductModalIsVisible} {productSelected} />
+    <EditProductModal form={formAct} {setProductPagination} {toggleEditProductModalIsVisible} {editProductModalIsVisible} {productSelected} />
 </div>

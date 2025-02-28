@@ -30,8 +30,9 @@ export async function createProduct(name: string, price: number, imgs: FileList)
 
 }
 
-export async function getProducts () {
-    const products = await db.select().from(table.product).execute();
+export async function getProducts (page: number = 1, limit: number = 2) {
+    const offset = (page - 1) * limit;
+    const products = await db.select().from(table.product).limit(limit).offset(offset).execute();
     const listProducts: {product: table.Product, imgs: table.Img[]}[] = [];
 
     for (const product of products) {
@@ -41,9 +42,16 @@ export async function getProducts () {
             imgs: imgs
         })
 
-    }
+    } 
 
-    return listProducts;
+    const totalProducts = (await db.select().from(table.product).execute()).length;
+    const totalPages = Math.ceil(totalProducts / limit);
+
+    return {
+        products: listProducts,
+        totalPages,
+        currentPage: page
+    };
 }
 
 export async function updateProduct (product_id: string, name: string, price: number, imgs?: FileList, imgsDelete?: string[]) {

@@ -1,7 +1,7 @@
 <script lang="ts">
 
 	import { enhance } from "$app/forms";
-	import type { ProductComplete } from "$lib/interfaces/product";
+	import type { ProductComplete, ProductPagination } from "$lib/interfaces/product";
 	import { fade, scale } from "svelte/transition";
 	import type { ActionData } from "../../../../routes/admin/$types";
 	import ContainerModal from "../ContainerModal.svelte";
@@ -9,12 +9,12 @@
 
     interface Props {
         form: ActionData
-        setProducts: (newProducts: ProductComplete[]) => void
+        setProductPagination: (newProductPagination: ProductPagination) => void
         toggleAddProductModalIsVisible: (visible?: boolean) => void
         addProductModalIsVisible: boolean
     }
 
-    let { form, setProducts, toggleAddProductModalIsVisible, addProductModalIsVisible }: Props = $props();
+    let { form, setProductPagination, toggleAddProductModalIsVisible, addProductModalIsVisible }: Props = $props();
 
     let formMessage = $state('');
 
@@ -40,9 +40,9 @@
                         }
                         if (result.type === "success") {
                             formElement.reset();
-                            if (result.data?.products) {
-                                console.log(result.data.products)
-                                setProducts(result.data.products as ProductComplete[]);
+                            if (result.data?.pagination) {
+                                console.log(result.data.pagination)
+                                setProductPagination(result.data.pagination as ProductPagination);
                                 toggleAddProductModalIsVisible(false);
                             }
                             // await goto("/admin", {invalidateAll: true});

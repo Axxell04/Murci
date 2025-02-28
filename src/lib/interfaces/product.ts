@@ -15,3 +15,9 @@ export interface ProductComplete {
     product: Product
     imgs: Img[]
 }
+
+export interface ProductPagination {
+    products: ProductComplete[]
+    totalPages: number
+    currentPage: number
+}

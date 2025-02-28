@@ -1,9 +1,86 @@
 import { getProducts } from "$lib/server/product";
-import type { PageServerLoad } from "./$types";
+import { fail } from "@sveltejs/kit";
+import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async () => {
-    const products = await getProducts();
+    const pagination = await getProducts();
     return {
-        products: products
+        pagination: pagination
     };
 };
+
+export const actions: Actions = {
+    prev_page: async (event) => {
+        const formData = await event.request.formData();
+        let totalPages = 0;
+        let currentPage = 0;
+        
+        try {
+            totalPages = parseInt(formData.get('total_pages') as string);
+            currentPage = parseInt(formData.get('current_page') as string);
+            if (isNaN(totalPages) || isNaN(currentPage)) {
+                return fail(400, { message: 'Invalid pagination params' })
+            }
+        } catch {
+            return fail(400, { message: 'Invalid pagination params' })
+        }
+
+
+        
+        if (currentPage <= 1) {
+            return fail(404, { message: 'Page not found' })
+        }
+        const nextPage = currentPage - 1;
+        const pagination = await getProducts(nextPage);
+
+        return {
+            pagination: pagination
+        }
+    },
+    next_page: async (event) => {
+        const formData = await event.request.formData();
+        let totalPages = 0;
+        let currentPage = 0;
+        
+        try {
+            totalPages = parseInt(formData.get('total_pages') as string);
+            currentPage = parseInt(formData.get('current_page') as string);
+            if (isNaN(totalPages) || isNaN(currentPage)) {
+                return fail(400, { message: 'Invalid pagination params' })
+            }
+        } catch {
+            return fail(400, { message: 'Invalid pagination params' })
+        }
+
+
+        
+        if (currentPage >= totalPages) {
+            return fail(404, { message: 'Page not found' })
+        }
+        const nextPage = currentPage + 1;
+        const pagination = await getProducts(nextPage);
+
+        return {
+            pagination: pagination
+        }
+    },
+    goto_page: async (event) => {
+        const formData = await event.request.formData();
+        let gotoPage = 0;
+
+        try {
+            gotoPage = parseInt(formData.get('goto_page') as string);
+            if (isNaN(gotoPage)) {
+                return fail(400, { message: 'Invalid pagination params' })
+            }
+        } catch {
+            return fail(400, { message: 'Invalid pagination params' })
+        }
+
+        const pagination = await getProducts(gotoPage);
+
+        return {
+            pagination: pagination
+        }
+    }
+}

@@ -20,11 +20,15 @@
     /* font-family: 'Carter One', serif; */
 }
 
-html {
+html, body {
     scroll-behavior: smooth;
 }
 
 input {
     font-family: 'Nunito', serif;
     text-align: center;
+}
+
+button {
+    cursor: pointer;
 }

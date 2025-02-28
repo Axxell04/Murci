@@ -1,7 +1,7 @@
 <script lang="ts">
 
 	import { enhance } from "$app/forms";
-	import type { ProductComplete } from "$lib/interfaces/product";
+	import type { ProductComplete, ProductPagination } from "$lib/interfaces/product";
 	import { fade, scale } from "svelte/transition";
 	import type { ActionData } from "../../../../routes/admin/$types";
 	import ContainerModal from "../ContainerModal.svelte";
@@ -12,13 +12,13 @@
 
     interface Props {
         form: ActionData
-        setProducts: (newProducts: ProductComplete[]) => void
+        setProductPagination: (newProductPagination: ProductPagination) => void
         productSelected?: ProductComplete
         toggleEditProductModalIsVisible: (visible?: boolean) => void
         editProductModalIsVisible: boolean
     }
 
-    let { form, setProducts, toggleEditProductModalIsVisible, editProductModalIsVisible, productSelected }: Props = $props();
+    let { form, setProductPagination, toggleEditProductModalIsVisible, editProductModalIsVisible, productSelected }: Props = $props();
 
     // Form
     let formMessage = $state('')
@@ -86,9 +86,9 @@
                             }
                         } else if (result.type === "success") {
                             formElement.reset();
-                            if (result.data?.products) {
+                            if (result.data?.pagination) {
                                 // console.log(result.data.products)
-                                setProducts(result.data.products as ProductComplete[]);
+                                setProductPagination(result.data.pagination as ProductPagination);
                                 toggleEditProductModalIsVisible(false);
                                 clearList();
                             }
