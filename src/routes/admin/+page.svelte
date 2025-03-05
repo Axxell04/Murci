@@ -115,6 +115,7 @@
                         }
                     }
                 }}
+                class="flex flex-col place-content-center"
                 >
                     <input type="number" hidden name="current_page" value={productPagination.currentPage}>
                     <input type="number" hidden name="total_pages" value={productPagination.totalPages}>
@@ -169,6 +170,7 @@
                         }
                     }
                 }}
+                class="flex flex-col place-content-center"
                 >
                     <input type="number" hidden name="current_page" value={productPagination.currentPage}>
                     <input type="number" hidden name="total_pages" value={productPagination.totalPages}>

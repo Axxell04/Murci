@@ -30,7 +30,7 @@ export async function createProduct(name: string, price: number, imgs: FileList)
 
 }
 
-export async function getProducts (page: number = 1, limit: number = 2) {
+export async function getProducts (page: number = 1, limit: number = 4) {
     const offset = (page - 1) * limit;
     const products = await db.select().from(table.product).limit(limit).offset(offset).execute();
     const listProducts: {product: table.Product, imgs: table.Img[]}[] = [];

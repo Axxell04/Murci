@@ -77,7 +77,7 @@
 {#if editProductModalIsVisible }
     <div transition:fade={{duration: 200}}>
         <ContainerModal toggleModal={toggleEditProductModalIsVisible} cancelClick={true}>
-                <form id="delete-product" action="?/edit_product" method="post" use:enhance={({formElement, formData, action, cancel}) => {
+                <form id="edit-product" action="?/edit_product" method="post" use:enhance={({formElement, formData, action, cancel}) => {
                     return async ({ result }) => {
                         console.log(result)
                         if (result.type === "failure") {
