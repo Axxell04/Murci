@@ -3,9 +3,10 @@ import { encodeBase32LowerCase, encodeBase32UpperCase } from '@oslojs/encoding';
 import { db } from '$lib/server/db';
 import path from 'path';
 import { promises as fs } from 'fs';
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
+import { addProductToCatalog } from './catalog';
 
-export async function createProduct(name: string, price: number, imgs: FileList) {
+export async function createProduct(name: string, price: number, imgs: FileList, catalogId?: string) {
     const productId = generateId();
     const product: table.Product = {
         id: productId,
@@ -27,12 +28,26 @@ export async function createProduct(name: string, price: number, imgs: FileList)
             }).execute();
         }
     }
+    // console.log('CatalogID: ', catalogId)
+    if (catalogId) {
+        await addProductToCatalog(productId, catalogId);
+    }
 
 }
 
-export async function getProducts (page: number = 1, limit: number = 4) {
+export async function getProducts (page: number = 1, limit: number = 10, catalogId?: string) {
+    // console.log('CatalogID: ', catalogId)
     const offset = (page - 1) * limit;
-    const products = await db.select().from(table.product).limit(limit).offset(offset).execute();
+    const products = !catalogId 
+                        ? await db.select().from(table.product).limit(limit).offset(offset).orderBy(desc(table.product.createdAt)).execute() 
+                        : await db.select({
+                            id: table.product.id,
+                            name: table.product.name,
+                            price: table.product.price,
+                            createdAt: table.product.createdAt
+                        }).from(table.product).innerJoin(table.productCatalog, eq(table.product.id, table.productCatalog.productId)).where(eq(table.productCatalog.catalogId, catalogId ?? '')).limit(limit).offset(offset).orderBy(desc(table.product.createdAt)).execute()
+                        
+                        
     const listProducts: {product: table.Product, imgs: table.Img[]}[] = [];
 
     for (const product of products) {
@@ -44,7 +59,14 @@ export async function getProducts (page: number = 1, limit: number = 4) {
 
     } 
 
-    const totalProducts = (await db.select().from(table.product).execute()).length;
+    const totalProducts = !catalogId
+        ? (await db.select().from(table.product).execute()).length 
+        : (await db.select({
+            id: table.product.id,
+            name: table.product.name,
+            price: table.product.price,
+            createdAt: table.product.createdAt
+        }).from(table.product).innerJoin(table.productCatalog, eq(table.product.id, table.productCatalog.productId)).where(eq(table.productCatalog.catalogId, catalogId ?? '')).execute()).length
     const totalPages = Math.ceil(totalProducts / limit);
 
     return {

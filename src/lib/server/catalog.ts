@@ -29,6 +29,14 @@ export async function deleteCatalog (id: string) {
     await db.delete(table.catalog).where(eq(table.catalog.id, id));
 }
 
+export async function validateCatalog (id: string) {
+    const exist = (await db.select().from(table.catalog).where(eq(table.catalog.id, id)).execute()).length;
+    if (!exist) {
+        return false;
+    }
+    return true;
+}
+
 // ProductCatalog Functions
 export async function addProductToCatalog (productId: string, catalogId: string) {
     const id = generateId();

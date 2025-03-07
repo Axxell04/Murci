@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import { sqliteTable, text, integer, real,  } from 'drizzle-orm/sqlite-core';
 
 // USUARIO
@@ -24,7 +25,7 @@ export const product = sqliteTable('product', {
 	id: text('id').primaryKey(),
 	name: text('name').notNull(),
 	price: real('price').notNull(),
-	createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(new Date()),
+	createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`CURRENT_TIMESTAMP`),
 })
 
 export const img = sqliteTable('img', {
@@ -37,7 +38,7 @@ export const catalog = sqliteTable('catalog', {
 	id: text('id').primaryKey(),
 	name: text('name').notNull(),
 	description: text('description'),
-	createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(new Date())
+	createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`CURRENT_TIMESTAMP`)
 })
 
 export const productCatalog = sqliteTable('product_catalog', {

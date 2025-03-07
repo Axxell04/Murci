@@ -2,17 +2,23 @@ import * as auth from '$lib/server/auth';
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { createProduct, deleteProduct, getImgs, getProducts, updateProduct } from '$lib/server/product';
+import { getCatalogs } from '$lib/server/catalog';
 
 export const load: PageServerLoad = async (event) => {
     if (!event.locals.user) {
         return redirect(302, '/login');
     }
 
-    const pagination = await getProducts();
+    const catalogId = event.locals.catalogId;
+
+    const pagination = await getProducts(undefined, undefined, catalogId ?? undefined);
+    const catalogs = await getCatalogs();
 
     return {
         user: event.locals.user,
-        pagination: pagination
+        pagination: pagination,
+        catalogId: catalogId,
+        catalogs: catalogs
     }
 }
 
@@ -83,6 +89,7 @@ export const actions: Actions = {
     goto_page: async (event) => {
         const formData = await event.request.formData();
         let gotoPage = 0;
+        const catalogId = event.locals.catalogId;
 
         try {
             gotoPage = parseInt(formData.get('goto_page') as string);
@@ -93,7 +100,26 @@ export const actions: Actions = {
             return fail(400, { message: 'Invalid pagination params' })
         }
 
-        const pagination = await getProducts(gotoPage);
+        const pagination = await getProducts(gotoPage, undefined, catalogId);
+
+        return {
+            pagination: pagination
+        }
+    },
+    set_catalog: async (event) => {
+        const formData = await event.request.formData();
+        const catalogId = formData.get('catalog_id') as string;
+
+        if (catalogId) {
+            event.cookies.set('catalog-id', catalogId, {
+                path: '/'
+            })
+        } else {
+            event.cookies.delete('catalog-id', {
+                path: '/'
+            })
+        }
+        const pagination = await getProducts(undefined, undefined, catalogId ?? undefined);
 
         return {
             pagination: pagination
@@ -105,6 +131,8 @@ export const actions: Actions = {
         const price = formData.get('price');
         const imgs = formData.getAll('imgs') as unknown as FileList;
 
+        const catalogId = event.locals.catalogId;
+
         if (!validateName(name)) {
             return fail(400, { message: 'Invalid name' });
         }
@@ -114,19 +142,20 @@ export const actions: Actions = {
         }
         
         try {
-            await createProduct(name, price, imgs);
+            await createProduct(name, price, imgs, catalogId ?? undefined);
 
         } catch (error) {
             console.log(error);
             return fail(500, { message: 'Internal server error' });
         }
 
-        const pagination = await getProducts();
+        const pagination = await getProducts(undefined, undefined, catalogId ?? undefined);
         return {pagination: pagination};
     },
     delete_product: async (event) => {
         const formData = await event.request.formData();
         const productId = formData.get('product_id');
+        const catalogId = event.locals.catalogId;
 
         try {
             await deleteProduct(productId as string);
@@ -135,7 +164,7 @@ export const actions: Actions = {
             return fail(500, { message: 'Internal server error' })
         }
         
-        const pagination = await getProducts();
+        const pagination = await getProducts(undefined, undefined, catalogId);
         return {
             pagination: pagination
         }
@@ -148,6 +177,7 @@ export const actions: Actions = {
         const imgs = formData.getAll('imgs') as unknown as FileList;
         const listDelete = formData.get('list_delete');
         let finalListDelete: string[] | undefined = [];
+        const catalogId = event.locals.catalogId;
 
         if (!validateProductId(product_id)) {
             return fail(400, { message: 'Invalid product id'})
@@ -178,7 +208,7 @@ export const actions: Actions = {
         }
 
 
-        const pagination = await getProducts();
+        const pagination = await getProducts(undefined, undefined, catalogId);
         return {
             pagination: pagination
         }
