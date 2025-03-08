@@ -11,14 +11,13 @@
 	import { onDestroy } from "svelte";
 
     interface Props {
-        form: ActionData
         setProductPagination: (newProductPagination: ProductPagination) => void
         productSelected?: ProductComplete
         toggleEditProductModalIsVisible: (visible?: boolean) => void
         editProductModalIsVisible: boolean
     }
 
-    let { form, setProductPagination, toggleEditProductModalIsVisible, editProductModalIsVisible, productSelected }: Props = $props();
+    let { setProductPagination, toggleEditProductModalIsVisible, editProductModalIsVisible, productSelected }: Props = $props();
 
     // Form
     let formMessage = $state('')
@@ -51,9 +50,6 @@
     function clearList () {
         listDelete = []
     }
-
-    $inspect(listDeleteToForm);
-    $inspect(listDelete);
     $effect(() => {
         if (formMessage) {
             setTimeout(() => {
@@ -68,9 +64,15 @@
         }
     })
 
-    // onDestroy(() => {
-    //     clearList()
-    // })
+    $effect(() => {
+        if (typeof window !== 'undefined') {
+            if (editProductModalIsVisible) {
+                document.body.classList.add('overflow-hidden');
+            } else {
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+    })
 
 </script>
 

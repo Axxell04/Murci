@@ -76,8 +76,6 @@
         scrollTo({behavior: 'smooth', top: 170})
     })
 
-    $inspect(catalogs);    
-
 </script>
 
 <div in:fade class="flex flex-col gap-2 px-5 py-5">

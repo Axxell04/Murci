@@ -26,6 +26,16 @@
         }
     })
 
+    $effect(() => {
+        if (typeof window !== 'undefined') {
+            if (deleteCatalogModalIsVisible) {
+                document.body.classList.add('overflow-hidden');
+            } else {
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+    })
+
 </script>
 
 {#if deleteCatalogModalIsVisible }
@@ -50,7 +60,7 @@
                 }} 
                 enctype="multipart/form-data" 
                 class="relative flex flex-col gap-2 bg-stone-900 border border-red-400 py-5 px-10 rounded-md max-w-full max-h-fit">
-                    <div class="flex flex-col gap-2 place-items-center">
+                    <div class="flex flex-col gap-2 place-items-center text-center">
                         <input type="hidden" name="id" value={!catalogSelected ? "" : (catalogSelected.id)}>
                         <label for="name">Nombre</label>
                         <span class="text-red-300">
@@ -59,7 +69,7 @@
                             {/if}
                         </span>
                     </div>
-                    <div class="flex flex-col gap-2 place-items-center">
+                    <div class="flex flex-col gap-2 place-items-center text-center">
                         <label for="price">Descripción</label>
                         <span class="text-red-300">
                             {#if catalogSelected}

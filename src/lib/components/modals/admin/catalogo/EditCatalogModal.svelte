@@ -18,7 +18,15 @@
     // Form
     let formMessage = $state('')
 
-
+    $effect(() => {
+        if (typeof window !== 'undefined') {
+            if (editCatalogModalIsVisible) {
+                document.body.classList.add('overflow-hidden');
+            } else {
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+    })
 
 </script>
 

@@ -19,7 +19,7 @@
     {@render children()}
     {:else}
     <div onclick={(e) => e.stopPropagation()} role="button" tabindex="0" onkeypress={()=>{}} 
-    class="flex flex-col place-items-center place-content-center outline-none h-full relative"
+    class="flex flex-col place-items-center w-full place-content-center outline-none h-full relative"
     >
         {@render children()}
     </div>

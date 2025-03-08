@@ -2,7 +2,8 @@ import * as auth from '$lib/server/auth';
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { createProduct, deleteProduct, getImgs, getProducts, updateProduct } from '$lib/server/product';
-import { getCatalogs } from '$lib/server/catalog';
+import { addProductToCatalog, getCatalogs, removeProductToCatalog } from '$lib/server/catalog';
+import type { ProductComplete } from '$lib/interfaces/product';
 
 export const load: PageServerLoad = async (event) => {
     if (!event.locals.user) {
@@ -31,6 +32,18 @@ export const actions: Actions = {
         auth.deleteSessionTokenCookie(event);
 
         redirect(302, '/login')
+    },
+    get_products: async () => {
+        
+        const pagination = await getProducts(undefined, 999999, undefined);
+        
+        // return new Response(JSON.stringify({
+        //     pagination: pagination
+        // }))
+
+        return {
+            pagination: pagination
+        }
     },
     prev_page: async (event) => {
         const formData = await event.request.formData();
@@ -207,6 +220,51 @@ export const actions: Actions = {
             return fail(500, { message: 'Internal server error' })
         }
 
+
+        const pagination = await getProducts(undefined, undefined, catalogId);
+        return {
+            pagination: pagination
+        }
+    },
+    add_product_to_catalog: async (event) => {
+        const formData = await event.request.formData();
+        const catalogId = formData.get('catalog_id') as string;
+        let products: ProductComplete[] = [];
+
+        try {
+            const list = formData.get('products_to_add_list') as string;
+            if (list && catalogId) {
+                products = JSON.parse(list);
+                for (const product of products) {
+                    await addProductToCatalog(product.product.id, catalogId)
+                }
+            } else {
+                return fail(400, { message: 'Invalid params' });
+            }
+        } catch (e) {
+            console.log(e);
+        }   
+
+        const pagination = await getProducts(undefined, undefined, catalogId);
+        return {
+            pagination: pagination
+        }
+    },
+    remove_product_to_catalog: async (event) => {
+        const formData = await event.request.formData();
+        const catalogId = formData.get('catalog_id') as string;
+        const productId = formData.get('product_id') as string;
+
+        if (!catalogId || !productId) {
+            return fail(400, { message: 'Invalid params' });
+        }
+
+        try {
+            await removeProductToCatalog(productId, catalogId)
+        } catch (error) {
+            console.log(error);
+            return fail(500, { message: 'Internal server error' })
+        }
 
         const pagination = await getProducts(undefined, undefined, catalogId);
         return {

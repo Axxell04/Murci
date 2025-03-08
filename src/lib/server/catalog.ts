@@ -1,7 +1,7 @@
 import * as table from '$lib/server/db/schema';
 import { encodeBase32LowerCase } from '@oslojs/encoding';
 import { db } from '$lib/server/db'
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 export async function createCatalog (name: string, description?: string) {
     const productId = generateId();
@@ -48,8 +48,8 @@ export async function addProductToCatalog (productId: string, catalogId: string)
     await db.insert(table.productCatalog).values(productCatalog).execute();
 }
 
-export async function removeProductToCatalog (id: string) {
-    await db.delete(table.productCatalog).where(eq(table.productCatalog.id, id)).execute();
+export async function removeProductToCatalog (productId: string, catalogId: string) {
+    await db.delete(table.productCatalog).where(and(eq(table.productCatalog.productId, productId), eq(table.productCatalog.catalogId, catalogId))).execute();
 }
 
 

@@ -1,20 +1,18 @@
 <script lang="ts">
 
 	import { enhance } from "$app/forms";
-	import type { ProductComplete, ProductPagination } from "$lib/interfaces/product";
+	import type { ProductPagination } from "$lib/interfaces/product";
 	import { fade, scale } from "svelte/transition";
-	import type { ActionData } from "../../../../routes/admin/$types";
 	import ContainerModal from "../ContainerModal.svelte";
 	import Icon from "@iconify/svelte";
 
     interface Props {
-        form: ActionData
         setProductPagination: (newProductPagination: ProductPagination) => void
         toggleAddProductModalIsVisible: (visible?: boolean) => void
         addProductModalIsVisible: boolean
     }
 
-    let { form, setProductPagination, toggleAddProductModalIsVisible, addProductModalIsVisible }: Props = $props();
+    let { setProductPagination, toggleAddProductModalIsVisible, addProductModalIsVisible }: Props = $props();
 
     let formMessage = $state('');
 
@@ -23,6 +21,16 @@
             setTimeout(() => {
                 formMessage = '';
             }, 5000)
+        }
+    })
+
+    $effect(() => {
+        if (typeof window !== 'undefined') {
+            if (addProductModalIsVisible) {
+                document.body.classList.add('overflow-hidden');
+            } else {
+                document.body.classList.remove('overflow-hidden');
+            }
         }
     })
 
@@ -50,7 +58,7 @@
                     }
                 }} 
                 enctype="multipart/form-data" 
-                class="relative flex flex-col gap-2 bg-stone-900 border border-red-400 py-1 px-2 rounded-md max-w-full max-h-fit">
+                class="relative flex flex-col gap-2 bg-stone-900 border border-red-400 py-3 px-4 rounded-md max-w-full max-h-fit">
                     <div class="flex flex-col gap-2 place-items-center">
                         <label for="name">Nombre</label>
                         <input type="text" name="name" id="name" required autocomplete="off"

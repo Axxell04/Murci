@@ -2,20 +2,40 @@
 
 	import { enhance } from "$app/forms";
 	import type { ProductComplete, ProductPagination } from "$lib/interfaces/product";
-	import { fade } from "svelte/transition";
+	import { fade, scale } from "svelte/transition";
 	import type { ActionData } from "../../../../routes/admin/$types";
 	import ContainerModal from "../ContainerModal.svelte";
 	import Icon from "@iconify/svelte";
 
     interface Props {
-        form: ActionData
         setProductPagination: (newProductPagination: ProductPagination) => void
         productSelected?: ProductComplete
+        catalogId: string
         toggleDeleteProductModalIsVisible: (visible?: boolean) => void
         deleteProductModalIsVisible: boolean
     }
 
-    let { form, setProductPagination, toggleDeleteProductModalIsVisible, deleteProductModalIsVisible, productSelected }: Props = $props();
+    let { setProductPagination, catalogId, toggleDeleteProductModalIsVisible, deleteProductModalIsVisible, productSelected }: Props = $props();
+
+    let formMessage = $state('');
+
+    $effect(() => {
+        if (formMessage) {
+            setTimeout(() => {
+                formMessage = '';
+            }, 6000);
+        }
+    })
+
+    $effect(() => {
+        if (typeof window !== 'undefined') {
+            if (deleteProductModalIsVisible) {
+                document.body.classList.add('overflow-hidden');
+            } else {
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+    })
 
 </script>
 
@@ -32,6 +52,10 @@
                                 toggleDeleteProductModalIsVisible(false);
                             }
                             // await goto("/admin", {invalidateAll: true});
+                        } else if (result.type === "failure") {
+                            if (result.data?.message) {
+                                formMessage = result.data.message as string;
+                            }
                         }
                     }
                 }} 
@@ -39,6 +63,7 @@
                 class="relative flex flex-col gap-2 bg-stone-900 border border-red-400 py-5 px-10 rounded-md max-w-full max-h-fit">
                     <div class="flex flex-col gap-2 place-items-center">
                         <input type="hidden" name="product_id" value={!productSelected ? "" : (productSelected.product.id)}>
+                        <input type="hidden" name="catalog_id" value={catalogId}>
                         <label for="name">Nombre</label>
                         <span class="text-red-300">
                             {#if productSelected}
@@ -66,11 +91,20 @@
                             Eliminar
                         </button>
                     </div>
-                    <div>
+                    {#if catalogId}
+                    <div class="flex flex-col gap-2 place-items-center">
+                        <button formaction="?/remove_product_to_catalog" type="submit" class="border hover:border-red-500 hover:text-red-500 border-red-400 rounded-md p-2 cursor-pointer">
+                            Quitar del catálogo
+                        </button>
+                    </div>
+                    {/if}
+                    {#if formMessage}                        
+                    <div transition:scale>
                         <p class="text-red-400 text-center">
-                            {form?.message ?? ""}
+                            {formMessage}
                         </p>
                     </div>
+                    {/if}
                     <div role="button" tabindex="0" onkeydown={()=>{}}
                     class="absolute top-2 right-2 hover:text-red-500 cursor-pointer" onclick="{() => toggleDeleteProductModalIsVisible(false)}">
                         <Icon icon="material-symbols:close-rounded" class="text-3xl" />

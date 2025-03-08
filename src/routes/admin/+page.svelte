@@ -1,6 +1,6 @@
 <script lang="ts">
     import { enhance } from "$app/forms";
-	import { fade, scale } from "svelte/transition";
+	import { fade, scale, slide } from "svelte/transition";
 	import type { PageProps } from "./$types";
 	import ProductCard from "$lib/components/ProductCard.svelte";
 	import { goto, invalidate, invalidateAll } from "$app/navigation";
@@ -9,16 +9,10 @@
 	import AddProductModal from "$lib/components/modals/admin/AddProductModal.svelte";
 	import DeleteProductModal from "$lib/components/modals/admin/DeleteProductModal.svelte";
 	import EditProductModal from "$lib/components/modals/admin/EditProductModal.svelte";
+	import AddProductToCatalogModal from "$lib/components/modals/admin/AddProductToCatalogModal.svelte";
 
-    let { data, form }: PageProps = $props();
+    let { data }: PageProps = $props();
 
-    // console.log(data.pagination);
-
-    let formAct = $derived(form);
-    let messages = $derived(form?.message);
-
-    // $inspect(formAct);
-    // $inspect(messages);
 
     // Pagination Data
     let productPagination: ProductPagination = $state(data.pagination);
@@ -30,12 +24,20 @@
     let catalogs = $state(data.catalogs)
     let catalogId =  $state(data.catalogId ?? '');
 
+    // HTML Elements
+    let selectCatalogElement: HTMLButtonElement | undefined = $state();
+
+    let selectCatalogElementHeight: number = $state(9);
+
     // Visible Elements
     let addProductModalIsVisible = $state(false);
+    let addProductToCatalogModalIsVisible = $state(false);
     let deleteProductModalIsVisible = $state(false);
     let editProductModalIsVisible = $state(false);
     let gotoPageListIsVisible = $state(false);
     let catalogListIsVisible = $state(false);
+
+    let optAddProductIsVisible = $state(false);
 
     // Selected Product
     let productSelected: ProductComplete | undefined = $state()
@@ -84,6 +86,20 @@
             catalogListIsVisible = !catalogListIsVisible;
         }
     }
+    function toggleOptAddProductIsVisible (visible?: boolean) {
+        if (typeof visible !== "undefined") {
+            optAddProductIsVisible = visible;
+        } else {
+            optAddProductIsVisible = !optAddProductIsVisible;
+        }
+    }
+    function toggleAddProductToCatalogModalIsVisible (visible?: boolean) {
+        if (typeof visible !== "undefined") {
+            addProductToCatalogModalIsVisible = visible;
+        } else {
+            addProductToCatalogModalIsVisible = !addProductToCatalogModalIsVisible;
+        }
+    }
 
     function createListPages (totalPages: number) {
         let list = []
@@ -101,23 +117,57 @@
         productPagination;
         scrollTo({behavior: 'smooth', top: 170})
     })
-
-    $inspect(productPagination);
     
+    
+    $effect(() => {
+        if (typeof selectCatalogElement !== 'undefined' && catalogListIsVisible) {
+            selectCatalogElementHeight = selectCatalogElement.clientHeight;
+        }
+    })
+
+    $inspect(selectCatalogElementHeight);
 
 </script>
 
 <div in:fade class="flex flex-col gap-2 px-5 py-5">
     <section class="flex flex-col gap-3 ">
-        <div class="sticky top-0 z-10 bg-stone-900/95 backdrop-blur-md place-content-around flex flex-row p-3 gap-2 place-items-center">
-            <button class="flex flex-row gap-1 border rounded-md p-1 hover:text-red-500 cursor-pointer place-items-center"
-            onclick={() => toggleAddProductModalIsVisible(true)}
-            >
-                <Icon icon="material-symbols:add-rounded" class="text-3xl" />
-                <span style="font-family: Nunito;">
-                    Añadir Producto
-                </span>
-            </button>
+        <div class="sticky top-0 z-10 bg-stone-900/95 backdrop-blur-md place-content-around flex flex-wrap p-3 gap-2 place-items-center">
+            <div class="flex flex-row gap-2 place-items-center">
+                <button class="flex flex-row gap-1 border rounded-md p-1 hover:text-red-500 cursor-pointer place-items-center"
+                onclick={() => {
+                    if (catalogId) {
+                        toggleOptAddProductIsVisible();
+                    } else {
+                        toggleAddProductModalIsVisible(true);
+                    }
+                    }}
+                >
+                    <Icon icon="material-symbols:add-rounded" class="text-3xl" />
+                    <span style="font-family: Nunito;">
+                        Añadir Producto
+                    </span>
+                </button>
+                {#if optAddProductIsVisible}    
+                <div transition:slide={{axis: "x"}} class="flex flex-row gap-1 border rounded-md h-fit">
+                    <button class="flex flex-row gap-1 border rounded-md p-1 bg-red-400 text-stone-900 hover:bg-red-500 cursor-pointer place-items-center"
+                    onclick={() => toggleAddProductModalIsVisible(true)}
+                    >
+                        <span style="font-family: Nunito;">
+                            Nuevo
+                        </span>
+                    </button>
+                    <button class="flex flex-row gap-1 border border-transparent rounded-md p-1 hover:text-red-500 cursor-pointer place-items-center"
+                    onclick={() => toggleAddProductToCatalogModalIsVisible(true)}
+                    >
+                        <span style="font-family: Nunito;">
+                            Existente
+                        </span>
+                    </button>
+
+                </div>
+                {/if}
+            </div>
+
             
             <div class="flex flex-row gap-3 place-items-center">
                 <form action="?/set_catalog" method="post" use:enhance={() => {
@@ -133,11 +183,13 @@
                 >
                     <input type="text" hidden name="catalog_id" value={catalogId} >
                     <!-- <input type="text" class="w-10 text-center text-3xl bg-transparent outline-none" value={productPagination.currentPage} oninput={(e)=>updatePagination(e)} /> -->
-                    <button type="button" class="text-center text-2xl h-9 bg-transparent outline-none" onclick={()=>toggleCatalogListIsVisible()}>
+                    <button bind:this={selectCatalogElement} type="button" class="text-center text-2xl bg-transparent outline-none" onclick={()=>toggleCatalogListIsVisible()}>
                         {catalogId ? catalogs.find((cat) => cat.id === catalogId)?.name : 'Todo'}
                     </button>
                     {#if catalogListIsVisible}                        
-                    <div transition:scale class="absolute top-9 flex flex-col text-2xl rounded-b-md border bg-stone-900/95 max-h-60 overflow-y-auto place-self-center">
+                    <div transition:scale class="absolute flex flex-col text-2xl rounded-b-md border bg-stone-900/95 max-h-60 overflow-y-auto place-self-center"
+                    style="top: {selectCatalogElementHeight}px;"
+                    >
                         <ul>
                             <li>
                                 <button class="hover:bg-stone-800 px-2 py-1 w-full {catalogId ? '' : 'text-red-500'}" onclick={()=>{catalogId = ''; toggleCatalogListIsVisible(false)}}>
@@ -243,7 +295,8 @@
             {/each}
         </div>
     </section>
-    <AddProductModal form={formAct} {setProductPagination} {toggleAddProductModalIsVisible} {addProductModalIsVisible} />
-    <DeleteProductModal form={formAct} {setProductPagination} {toggleDeleteProductModalIsVisible} {deleteProductModalIsVisible} {productSelected} />
-    <EditProductModal form={formAct} {setProductPagination} {toggleEditProductModalIsVisible} {editProductModalIsVisible} {productSelected} />
+    <AddProductModal {setProductPagination} {toggleAddProductModalIsVisible} {addProductModalIsVisible} />
+    <DeleteProductModal {setProductPagination} {catalogId} {toggleDeleteProductModalIsVisible} {deleteProductModalIsVisible} {productSelected} />
+    <EditProductModal {setProductPagination} {toggleEditProductModalIsVisible} {editProductModalIsVisible} {productSelected} />
+    <AddProductToCatalogModal {products} {setProductPagination} {catalogId} {toggleAddProductToCatalogModalIsVisible} {addProductToCatalogModalIsVisible} />
 </div>

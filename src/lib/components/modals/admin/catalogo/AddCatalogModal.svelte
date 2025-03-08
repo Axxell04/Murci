@@ -26,6 +26,16 @@
         }
     })
 
+    $effect(() => {
+        if (typeof window !== 'undefined') {
+            if (addCatalogModalIsVisible) {
+                document.body.classList.add('overflow-hidden');
+            } else {
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+    })
+
 </script>
 
 {#if addCatalogModalIsVisible }
