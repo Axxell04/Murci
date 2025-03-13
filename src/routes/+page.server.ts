@@ -1,12 +1,19 @@
 import { getProducts } from "$lib/server/product";
 import { fail } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
+import { getCatalogs } from "$lib/server/catalog";
 
-export const load: PageServerLoad = async () => {
-    const pagination = await getProducts();
+export const load: PageServerLoad = async (event) => {
+    const catalogId = event.locals.catalogId;
+    
+    const pagination = await getProducts(undefined, undefined, catalogId ?? undefined);
+    const catalogs = await getCatalogs();
+
     return {
-        pagination: pagination
-    };
+        pagination: pagination,
+        catalogId: catalogId,
+        catalogs: catalogs
+    }
 };
 
 export const actions: Actions = {
@@ -78,6 +85,25 @@ export const actions: Actions = {
         }
 
         const pagination = await getProducts(gotoPage);
+
+        return {
+            pagination: pagination
+        }
+    },
+    set_catalog: async (event) => {
+        const formData = await event.request.formData();
+        const catalogId = formData.get('catalog_id') as string;
+
+        if (catalogId) {
+            event.cookies.set('catalog-id', catalogId, {
+                path: '/'
+            })
+        } else {
+            event.cookies.delete('catalog-id', {
+                path: '/'
+            })
+        }
+        const pagination = await getProducts(undefined, undefined, catalogId ?? undefined);
 
         return {
             pagination: pagination

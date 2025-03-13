@@ -19,6 +19,15 @@
 
     let gotoPage: number | undefined = $state();
 
+    // Catalogs 
+    let catalogs = $state(data.catalogs);
+    let catalogId = $state(data.catalogId ?? '');
+
+    // HTML Elements
+    let selectCatalogElement: HTMLButtonElement | undefined = $state();
+
+    let selectCatalogElementHeight: number = $state(9);
+
     // Selected Elements
     let productSelected: ProductComplete | undefined = $state() 
 
@@ -30,7 +39,9 @@
 
     // Visible Elements
     let productModalIsVisible = $state(false);
-    let gotoPageListIsVisible = $state(false)
+    let gotoPageListIsVisible = $state(false);
+    let catalogListIsVisible = $state(false);
+
 
     // Toggle Visible Elements
     function toggleProductModalIsVisible (visible?: boolean) {
@@ -45,6 +56,13 @@
             gotoPageListIsVisible = visible;
         } else {
             gotoPageListIsVisible = !gotoPageListIsVisible;
+        }
+    }
+    function toggleCatalogListIsVisible (visible?: boolean) {
+        if (typeof visible !== "undefined") {
+            catalogListIsVisible = visible;
+        } else {
+            catalogListIsVisible = !catalogListIsVisible;
         }
     }
 
@@ -80,17 +98,57 @@
     $effect(() => {
         productPagination;
         scrollTo({behavior: 'smooth', top: 170})
+    });
+
+    $effect(() => {
+        if (typeof selectCatalogElement !== 'undefined' && catalogListIsVisible) {
+            selectCatalogElementHeight = selectCatalogElement.clientHeight;
+        }
     })
 
 </script>
 
 <div in:fade class="flex flex-col gap-2 max-w-full max-h-full">
     <section class="px-10 w-full sticky top-0 z-10 bg-stone-900/95 backdrop-blur-lg">
-        <div class="flex flex-wrap gap-3 justify-center  text-center text-red-400 font-normal p-4 border border-transparent border-b-red-400">
+        <div class="flex flex-wrap gap-3 place-items-center place-content-between text-center text-red-400 font-normal p-4 border border-transparent border-b-red-400">
             <div class="flex flex-row gap-2 place-items-center">
-                <span class="block align-middle">
-                    Todo
-                </span>
+                <form action="?/set_catalog" method="post" use:enhance={() => {
+                    return async ({ result }) => {
+                        if (result.type === "success") {
+                            if (result.data?.pagination) {
+                                setProductPagination(result.data.pagination as ProductPagination);
+                            }
+                        }
+                    }
+                }}
+                class="flex flex-col place-content-center relative"
+                >
+                    <input type="text" hidden name="catalog_id" value={catalogId} >
+                    <!-- <input type="text" class="w-10 text-center text-3xl bg-transparent outline-none" value={productPagination.currentPage} oninput={(e)=>updatePagination(e)} /> -->
+                    <button bind:this={selectCatalogElement} type="button" class="text-center text-2xl bg-transparent outline-none hover:text-red-500" onclick={()=>toggleCatalogListIsVisible()}>
+                        {catalogId ? catalogs.find((cat) => cat.id === catalogId)?.name : 'Todo'}
+                    </button>
+                    {#if catalogListIsVisible}                        
+                    <div transition:scale class="absolute flex flex-col text-2xl rounded-b-md border bg-stone-900/95 max-h-60 overflow-y-auto place-self-center z-10"
+                    style="top: {selectCatalogElementHeight}px;"
+                    >
+                        <ul>
+                            <li>
+                                <button class="hover:bg-stone-800 px-2 py-1 w-full {catalogId ? '' : 'text-red-500'}" onclick={()=>{catalogId = ''; toggleCatalogListIsVisible(false)}}>
+                                    Todo
+                                </button>
+                            </li>
+                            {#each catalogs as catalog}
+                            <li>
+                                <button class="hover:bg-stone-800 px-2 py-1 w-full {catalogId === catalog.id ? 'text-red-500' : ''}" onclick={()=>{catalogId = catalog.id; toggleCatalogListIsVisible(false)}}>
+                                    {catalog.name}
+                                </button>
+                            </li>
+                            {/each}
+                        </ul>
+                    </div>
+                    {/if}
+                </form>
                 <form action="?/prev_page" method="post" use:enhance={() => {
                     return async ({ result }) => {
                         if (result.type === "success") {
@@ -128,11 +186,11 @@
                 >
                     <input type="number" hidden name="goto_page" value={gotoPage} >
                     <!-- <input type="text" class="w-10 text-center text-3xl bg-transparent outline-none" value={productPagination.currentPage} oninput={(e)=>updatePagination(e)} /> -->
-                    <button type="button" class="w-10 text-center text-3xl bg-transparent outline-none" onclick={()=>toggleGotoPageListIsVisible()}>
+                    <button type="button" class="w-10 text-center text-3xl bg-transparent h-9 outline-none hover:text-red-500" onclick={()=>toggleGotoPageListIsVisible()}>
                         {productPagination.currentPage}
                     </button>
                     {#if gotoPageListIsVisible}                        
-                    <div transition:scale class="absolute -bottom-20 flex flex-col text-3xl rounded-b-md border bg-stone-900/95 h-20 overflow-y-auto place-self-center">
+                    <div transition:scale class="absolute top-9 flex flex-col text-3xl rounded-b-md border bg-stone-900/95 max-h-65 overflow-y-auto place-self-center">
                         <ul>
                             {#each createListPages(productPagination.totalPages) as page}
                             <li>
@@ -172,7 +230,7 @@
                     {/if}
                 </form>
             </div>
-            <div class="flex flex-row flex-grow place-content-end">
+            <div class="flex flex-row">
                 <a href="/carrito" class="flex flex-row gap-1 justify-end self-end place-items-center hover:text-red-500">
                     <div class="relative flex flex-col place-items-center">
                         <Icon icon="bi:cart-fill" class="text-4xl" />

@@ -125,8 +125,6 @@
         }
     })
 
-    $inspect(selectCatalogElementHeight);
-
 </script>
 
 <div in:fade class="flex flex-col gap-2 px-5 py-5">
@@ -183,7 +181,7 @@
                 >
                     <input type="text" hidden name="catalog_id" value={catalogId} >
                     <!-- <input type="text" class="w-10 text-center text-3xl bg-transparent outline-none" value={productPagination.currentPage} oninput={(e)=>updatePagination(e)} /> -->
-                    <button bind:this={selectCatalogElement} type="button" class="text-center text-2xl bg-transparent outline-none" onclick={()=>toggleCatalogListIsVisible()}>
+                    <button bind:this={selectCatalogElement} type="button" class="text-center text-2xl bg-transparent outline-none hover:text-red-500" onclick={()=>toggleCatalogListIsVisible()}>
                         {catalogId ? catalogs.find((cat) => cat.id === catalogId)?.name : 'Todo'}
                     </button>
                     {#if catalogListIsVisible}                        
@@ -245,7 +243,7 @@
                 >
                     <input type="number" hidden name="goto_page" value={gotoPage} >
                     <!-- <input type="text" class="w-10 text-center text-3xl bg-transparent outline-none" value={productPagination.currentPage} oninput={(e)=>updatePagination(e)} /> -->
-                    <button type="button" class="w-10 text-center text-3xl h-9 bg-transparent outline-none" onclick={()=>toggleGotoPageListIsVisible()}>
+                    <button type="button" class="w-10 text-center text-3xl h-9 bg-transparent outline-none hover:text-red-500" onclick={()=>toggleGotoPageListIsVisible()}>
                         {productPagination.currentPage}
                     </button>
                     {#if gotoPageListIsVisible}                        
