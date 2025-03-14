@@ -18,21 +18,11 @@
     // Form
     let formMessage = $state('')
 
-    $effect(() => {
-        if (typeof window !== 'undefined') {
-            if (editCatalogModalIsVisible) {
-                document.body.classList.add('overflow-hidden');
-            } else {
-                document.body.classList.remove('overflow-hidden');
-            }
-        }
-    })
-
 </script>
 
 {#if editCatalogModalIsVisible }
     <div transition:fade={{duration: 200}}>
-        <ContainerModal toggleModal={toggleEditCatalogModalIsVisible} cancelClick={true}>
+        <ContainerModal toggleModal={toggleEditCatalogModalIsVisible} visible={editCatalogModalIsVisible} cancelClick={true}>
                 <form id="edit-catalog" action="?/edit_catalog" method="post" use:enhance={({formElement, formData, action, cancel}) => {
                     return async ({ result }) => {
                         console.log(result)

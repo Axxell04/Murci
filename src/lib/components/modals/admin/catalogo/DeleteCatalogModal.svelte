@@ -26,21 +26,12 @@
         }
     })
 
-    $effect(() => {
-        if (typeof window !== 'undefined') {
-            if (deleteCatalogModalIsVisible) {
-                document.body.classList.add('overflow-hidden');
-            } else {
-                document.body.classList.remove('overflow-hidden');
-            }
-        }
-    })
 
 </script>
 
 {#if deleteCatalogModalIsVisible }
     <div transition:fade={{duration: 200}}>
-        <ContainerModal toggleModal={toggleDeleteCatalogModalIsVisible} cancelClick={true}>
+        <ContainerModal toggleModal={toggleDeleteCatalogModalIsVisible} visible={deleteCatalogModalIsVisible} cancelClick={true}>
                 <form id="delete-catalog" action="?/delete_catalog" method="post" use:enhance={({formElement, formData, action, cancel}) => {
                     return async ({ result }) => {
                         if (result.type === "success") {

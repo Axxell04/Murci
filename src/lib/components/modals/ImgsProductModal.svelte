@@ -76,7 +76,7 @@
 
 {#if imgsProductModalIsVisible }
     <div transition:fade={{duration: 200}}>
-        <ContainerModal toggleModal={toggleImgsProductModalIsVisible} cancelClick={true}>
+        <ContainerModal toggleModal={toggleImgsProductModalIsVisible} visible={imgsProductModalIsVisible} cancelClick={true}>
             <div class="flex flex-col max-h-full gap-9 box-border relative">
                 <div class="flex flex-col relative box-border grow" style="height: 80%;">
                     {#if !imgSalt}

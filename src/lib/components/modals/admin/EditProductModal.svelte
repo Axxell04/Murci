@@ -64,21 +64,11 @@
         }
     })
 
-    $effect(() => {
-        if (typeof window !== 'undefined') {
-            if (editProductModalIsVisible) {
-                document.body.classList.add('overflow-hidden');
-            } else {
-                document.body.classList.remove('overflow-hidden');
-            }
-        }
-    })
-
 </script>
 
 {#if editProductModalIsVisible }
     <div transition:fade={{duration: 200}}>
-        <ContainerModal toggleModal={toggleEditProductModalIsVisible} cancelClick={true}>
+        <ContainerModal toggleModal={toggleEditProductModalIsVisible} visible={editProductModalIsVisible} cancelClick={true}>
                 <form id="edit-product" action="?/edit_product" method="post" use:enhance={({formElement, formData, action, cancel}) => {
                     return async ({ result }) => {
                         console.log(result)

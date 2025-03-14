@@ -109,7 +109,7 @@
 </script>
 
 <div in:fade class="flex flex-col gap-2 max-w-full max-h-full">
-    <section class="px-10 w-full sticky top-0 z-10 bg-stone-900/95 backdrop-blur-lg">
+    <section class="px-10 w-full sticky -top-1 z-10 bg-stone-900/95 backdrop-blur-lg">
         <div class="flex flex-wrap gap-3 place-items-center place-content-between text-center text-red-400 font-normal p-4 border border-transparent border-b-red-400">
             <div class="flex flex-row gap-2 place-items-center">
                 <form action="?/set_catalog" method="post" use:enhance={() => {

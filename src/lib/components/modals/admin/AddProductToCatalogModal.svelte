@@ -58,27 +58,13 @@
         }
     })
 
-    $effect(() => {
-        if (typeof window !== 'undefined') {
-            const body = document.querySelector('body')
-            if (addProductToCatalogModalIsVisible) {
-                if (typeof btnGetProducts !== 'undefined') {
-                    btnGetProducts.click();
-                }
-                body?.classList.add('overflow-hidden')
-            } else {
-                body?.classList.remove('overflow-hidden')
-                
-            }
-
-        }
-    })
+    
 
 </script>
 
 {#if addProductToCatalogModalIsVisible }
     <div transition:fade={{duration: 200}}>
-        <ContainerModal toggleModal={toggleAddProductToCatalogModalIsVisible} cancelClick={true}>
+        <ContainerModal toggleModal={toggleAddProductToCatalogModalIsVisible} visible={addProductToCatalogModalIsVisible} cancelClick={true}>
                 <form action="?/get_products" method="post" use:enhance={() => {
                     return async ({ result }) => {
                         if (result.type === "failure") {

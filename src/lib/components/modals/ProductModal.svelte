@@ -17,7 +17,7 @@
 
 {#if productModalIsVisible}
 <div transition:fade={{duration: 200}}>
-<ContainerModal toggleModal={toggleProductModalIsVisible}>
+<ContainerModal toggleModal={toggleProductModalIsVisible} visible={productModalIsVisible}>
     <div >
         <img src={productSelected?.imgs[0].url} alt={productSelected?.product.name} loading="lazy">
     </div>
