@@ -18,6 +18,15 @@
 
     let formMessage = $state('');
 
+    function cancelFocus (e: FocusEvent) {
+        const target = e.target as HTMLButtonElement;
+        if (target) {
+            setTimeout(() => {
+                target.blur();
+            }, 300)
+        }
+    }
+
     $effect(() => {
         if (formMessage) {
             setTimeout(() => {
@@ -50,7 +59,7 @@
                     }
                 }} 
                 enctype="multipart/form-data" 
-                class="relative flex flex-col gap-2 bg-stone-900 border border-red-400 py-1 px-2 rounded-md max-w-full max-h-fit">
+                class="relative flex flex-col gap-2 bg-stone-900 border border-red-400 py-3 px-4 rounded-md max-w-full max-h-fit">
                     <div class="flex flex-col gap-2 place-items-center">
                         <label for="name">Nombre</label>
                         <input type="text" name="name" id="name" required autocomplete="off"
@@ -64,7 +73,9 @@
                         />
                     </div>
                     <div class="flex flex-col gap-2 place-items-center">
-                        <button type="submit" class="border hover:border-red-500 hover:text-red-500 border-red-400 rounded-md p-2 cursor-pointer">
+                        <button class="border hover:text-red-500 focus:text-red-500 rounded-md p-2 cursor-pointer"
+                        onfocus={(e) => cancelFocus(e)}
+                        >
                             Agregar
                         </button>
                     </div>

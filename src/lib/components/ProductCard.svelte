@@ -32,7 +32,14 @@
         selectThisProduct = () => {};
     }
 
-
+    function cancelFocus (e: FocusEvent) {
+        const target = e.target as HTMLButtonElement;
+        if (target) {
+            setTimeout(() => {
+                target.blur();
+            }, 200)
+        }
+    }
 
 </script>
 
@@ -55,10 +62,16 @@
     </div>
     {#if isSelected && actualRoute?.includes('/admin')}        
     <div transition:scale class="absolute top-2 right-2 flex flex-col place-items-center gap-2 p-2 text-4xl bg-stone-900/90 backdrop-blur-xl rounded-md">
-        <button class="cursor-pointer hover:text-red-500" onclick={()=>toggleDeleteProductModalIsVisible(true)}>
+        <button class="cursor-pointer hover:text-red-500 focus:text-red-500" 
+        onclick={()=>toggleDeleteProductModalIsVisible(true)}
+        onfocus={(e) => cancelFocus(e)}
+        >
             <Icon icon="famicons:trash" />
         </button>
-        <button class="cursor-pointer hover:text-red-500" onclick={()=>toggleEditProductModalIsVisible(true)}>
+        <button class="cursor-pointer hover:text-red-500 focus:text-red-500" 
+        onclick={()=>toggleEditProductModalIsVisible(true)}
+        onfocus={(e) => cancelFocus(e)}
+        >
             <Icon icon="mdi:edit-outline" />
         </button>
     </div>

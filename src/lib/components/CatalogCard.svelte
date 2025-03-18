@@ -29,11 +29,18 @@
         selectThisCatalog = () => {};
     }
 
-
+    function cancelFocus (e: FocusEvent) {
+        const target = e.target as HTMLButtonElement;
+        if (target) {
+            setTimeout(() => {
+                target.blur();
+            }, 300)
+        }
+    }
 
 </script>
 
-<div class="flex flex-row gap-2 relative border border-red-400 rounded hover:border-red-500 cursor-pointer"
+<div class="flex flex-row gap-2 relative border border-red-400 rounded hover:border-red-500 focus:border-red-500 focus:bg-stone-800 cursor-pointer"
     onclick={()=>selectThisCatalog(catalog)}
     role="button"
     tabindex="0"
@@ -49,10 +56,16 @@
     </div>
     {#if actualRoute?.includes('/admin')}        
     <div transition:scale class="flex flex-row place-items-center gap-2 p-2 text-4xl bg-stone-900/90 backdrop-blur-xl rounded-md">
-        <button class="cursor-pointer hover:text-red-500" onclick={()=>toggleDeleteCatalogModalIsVisible(true)}>
+        <button class="cursor-pointer hover:text-red-500 focus:text-red-500" 
+        onclick={()=>toggleDeleteCatalogModalIsVisible(true)}
+        onfocus={(e) => cancelFocus(e)}
+        >
             <Icon icon="famicons:trash" />
         </button>
-        <button class="cursor-pointer hover:text-red-500" onclick={()=>toggleEditCatalogModalIsVisible(true)}>
+        <button class="cursor-pointer hover:text-red-500 focus:text-red-500" 
+        onclick={()=>toggleEditCatalogModalIsVisible(true)}
+        onfocus={(e) => cancelFocus(e)}
+        >
             <Icon icon="mdi:edit-outline" />
         </button>
     </div>

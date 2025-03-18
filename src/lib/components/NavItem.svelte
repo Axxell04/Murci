@@ -19,7 +19,7 @@
 </script>
 
 <li class="{isSelected() ? 'border-b-red-400' : ''} border border-transparent hover:border-b-red-500">
-	<a href={endPoint} class="px-2 py-1 w-full"> 
+	<a href={endPoint} class="px-2 py-1 w-full focus:text-red-400"> 
         {name} 
     </a>
 </li>

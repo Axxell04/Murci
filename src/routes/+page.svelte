@@ -116,6 +116,15 @@
         return list;
     }
 
+    function cancelFocus (e: FocusEvent) {
+        const target = e.target as HTMLButtonElement;
+        if (target) {
+            setTimeout(() => {
+                target.blur();
+            }, 200)
+        }
+    }
+ 
     // Effects
 
     $effect(() => {
@@ -158,7 +167,10 @@
                 >
                     <input type="text" hidden name="catalog_id" value={catalogId} >
                     <!-- <input type="text" class="w-10 text-center text-3xl bg-transparent outline-none" value={productPagination.currentPage} oninput={(e)=>updatePagination(e)} /> -->
-                    <button bind:this={selectCatalogElement} type="button" class="text-center text-2xl bg-transparent outline-none hover:text-red-500" onclick={()=>toggleCatalogListIsVisible()}>
+                    <button bind:this={selectCatalogElement} type="button" class="text-center text-2xl bg-transparent outline-none hover:text-red-500 focus:text-red-500" 
+                    onclick={()=>toggleCatalogListIsVisible()}
+                    onfocus={(e) => cancelFocus(e)}
+                    >
                         {catalogId ? catalogs.find((cat) => cat.id === catalogId)?.name : 'Todo'}
                     </button>
                     {#if catalogListIsVisible}                        
@@ -167,13 +179,13 @@
                     >
                         <ul>
                             <li>
-                                <button class="hover:bg-stone-800 px-2 py-1 w-full {catalogId ? '' : 'text-red-500'}" onclick={()=>{catalogId = ''; toggleCatalogListIsVisible(false)}}>
+                                <button class="hover:bg-stone-800 focus:bg-stone-800 px-2 py-1 w-full {catalogId ? '' : 'text-red-500'}" onclick={()=>{catalogId = ''; toggleCatalogListIsVisible(false)}}>
                                     Todo
                                 </button>
                             </li>
                             {#each catalogs as catalog}
                             <li>
-                                <button class="hover:bg-stone-800 px-2 py-1 w-full {catalogId === catalog.id ? 'text-red-500' : ''}" onclick={()=>{catalogId = catalog.id; toggleCatalogListIsVisible(false)}}>
+                                <button class="hover:bg-stone-800 focus:bg-stone-800 px-2 py-1 w-full {catalogId === catalog.id ? 'text-red-500' : ''}" onclick={()=>{catalogId = catalog.id; toggleCatalogListIsVisible(false)}}>
                                     {catalog.name}
                                 </button>
                             </li>
@@ -196,7 +208,7 @@
                     <input type="number" hidden name="current_page" value={productPagination.currentPage}>
                     <input type="number" hidden name="total_pages" value={productPagination.totalPages}>
                     {#if productPagination.currentPage > 1}
-                    <button class="hover:text-red-500">
+                    <button class="hover:text-red-500 focus:text-red-500" onfocus={(e) => cancelFocus(e)}>
                         <Icon icon="icon-park-outline:left-c" class="text-3xl" />
                     </button>
                     {:else}
@@ -219,7 +231,10 @@
                 >
                     <input type="number" hidden name="goto_page" value={gotoPage} >
                     <!-- <input type="text" class="w-10 text-center text-3xl bg-transparent outline-none" value={productPagination.currentPage} oninput={(e)=>updatePagination(e)} /> -->
-                    <button type="button" class="w-10 text-center text-3xl bg-transparent h-9 outline-none hover:text-red-500" onclick={()=>toggleGotoPageListIsVisible()}>
+                    <button type="button" class="w-10 text-center text-3xl bg-transparent h-9 outline-none hover:text-red-500 focus:text-red-500" 
+                    onclick={()=>toggleGotoPageListIsVisible()}
+                    onfocus={(e) => cancelFocus(e)}
+                    >
                         {productPagination.currentPage}
                     </button>
                     {#if gotoPageListIsVisible}                        
@@ -227,7 +242,10 @@
                         <ul>
                             {#each createListPages(productPagination.totalPages) as page}
                             <li>
-                                <button class="hover:bg-stone-800 px-2 py-1 w-full" onclick={()=>{gotoPage = page; toggleGotoPageListIsVisible(false)}}>
+                                <button class="hover:bg-stone-800 focus:bg-stone-800 focus:text-red-500 px-2 py-1 w-full" 
+                                onclick={()=>{gotoPage = page; toggleGotoPageListIsVisible(false)}}
+                                onfocus={(e) => cancelFocus(e)}
+                                >
                                     {page}
                                 </button>
                             </li>
@@ -253,7 +271,7 @@
                     <input type="number" hidden name="current_page" value={productPagination.currentPage}>
                     <input type="number" hidden name="total_pages" value={productPagination.totalPages}>
                     {#if productPagination.currentPage < productPagination.totalPages}
-                    <button class="hover:text-red-500">
+                    <button class="hover:text-red-500 focus-within:text-red-500" onfocus={(e) => cancelFocus(e)}>
                         <Icon icon="icon-park-outline:right-c" class="text-3xl" />
                     </button>
                     {:else}    
@@ -264,7 +282,9 @@
                 </form>
             </div>
             <div class="flex flex-row">
-                <a href="/carrito" class="flex flex-row gap-1 justify-end self-end place-items-center hover:text-red-500">
+                <a href="/carrito" class="flex flex-row gap-1 justify-end self-end place-items-center hover:text-red-500 focus:text-red-500"
+                onfocus={(e) => cancelFocus(e)}
+                >
                     <div class="relative flex flex-col place-items-center">
                         <Icon icon="bi:cart-fill" class="text-4xl" />
                         {#if cart.length}
@@ -302,7 +322,9 @@ class="hidden"
 <Toast message={toastMessage} />
 
 <ImgsProductModal {productSelected} imgsProductModalIsVisible={productModalIsVisible} toggleImgsProductModalIsVisible={toggleProductModalIsVisible}>
-    <button class="px-2 py-1 border rounded-full hover:text-red-500" onclick={addToCart}>
+    <button class="px-2 py-1 border rounded-full hover:text-red-500 focus:text-red-500 focus:bg-stone-800" onclick={addToCart}
+    onfocus={(e) => cancelFocus(e)}
+    >
         Añadir al carrito
     </button>
 </ImgsProductModal>

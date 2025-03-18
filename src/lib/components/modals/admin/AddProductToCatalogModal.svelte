@@ -50,6 +50,15 @@
         return totalList;
     }
 
+    function cancelFocus (e: FocusEvent) {
+        const target = e.target as HTMLButtonElement;
+        if (target) {
+            setTimeout(() => {
+                target.blur();
+            }, 200)
+        }
+    }
+
     $effect(() => {
         if (formMessage) {
             setTimeout(() => {
@@ -132,8 +141,10 @@
                             <ul>                                
                                 {#each totalProductsList as product}
                                 <li>
-                                    <button type="button" class="w-full hover:bg-stone-800 p-2 {isSelected(product) ? 'text-red-500' : '' }" 
-                                    onclick={() => toggleProductToAdd(product)}>
+                                    <button type="button" class="w-full hover:bg-stone-800 focus:bg-stone-800 p-2 {isSelected(product) ? 'text-red-500' : '' }" 
+                                    onclick={() => toggleProductToAdd(product)}
+                                    onfocus={(e) => cancelFocus(e)}
+                                    >
                                         {product.product.name}
                                     </button>
                                 </li>
@@ -142,9 +153,17 @@
                         </div>
                     </div>
                     <div class="flex flex-col gap-2 place-items-center">
-                        <button type="submit" class="border hover:border-red-500 hover:text-red-500 border-red-400 rounded-md p-2 cursor-pointer">
+                        {#if productsToAddList.length > 0}                            
+                        <button type="submit" class="border hover:text-red-500 focus:text-red-500 rounded-md p-2 cursor-pointer"
+                        onfocus={(e) => cancelFocus(e)}
+                        >
                             Agregar
                         </button>
+                        {:else}
+                        <button type="submit" class="border  rounded-md p-2 cursor-pointer opacity-50" disabled>
+                            Agregar
+                        </button>
+                        {/if}
                     </div>
                     {#if formMessage}
                     <div transition:scale>

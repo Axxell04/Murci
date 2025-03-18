@@ -18,6 +18,15 @@
     // Form
     let formMessage = $state('')
 
+    function cancelFocus (e: FocusEvent) {
+        const target = e.target as HTMLButtonElement;
+        if (target) {
+            setTimeout(() => {
+                target.blur();
+            }, 300)
+        }
+    }
+
 </script>
 
 {#if editCatalogModalIsVisible }
@@ -67,7 +76,9 @@
                         </span>
                     </div>
                     <div class="flex flex-col gap-2 place-items-center">
-                        <button type="submit" class="border hover:border-red-500 hover:text-red-500 border-red-400 rounded-md p-2 cursor-pointer">
+                        <button type="submit" class="border focus:text-red-500 hover:text-red-500 rounded-md p-2 cursor-pointer"
+                        onfocus={(e) => cancelFocus(e)}
+                        >
                             Editar
                         </button>
                     </div>

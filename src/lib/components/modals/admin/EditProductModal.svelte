@@ -50,6 +50,16 @@
     function clearList () {
         listDelete = []
     }
+
+    function cancelFocus (e: FocusEvent) {
+        const target = e.target as HTMLButtonElement;
+        if (target) {
+            setTimeout(() => {
+                target.blur();
+            }, 200)
+        }
+    }
+
     $effect(() => {
         if (formMessage) {
             setTimeout(() => {
@@ -119,7 +129,10 @@
                         class="border border-red-400 rounded-md px-1 outline-none max-w-full" 
                         style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;"
                         />
-                        <button type="button" class="border p-1 rounded-md cursor-pointer hover:text-red-500 hover:border-red-500" onclick={()=>toggleImgsEditProductModalIsVisible(true)}>
+                        <button type="button" class="border p-1 rounded-md cursor-pointer hover:text-red-500 focus:text-red-500" 
+                        onclick={()=>toggleImgsEditProductModalIsVisible(true)}
+                        onfocus={(e) => cancelFocus(e)}
+                        >
                             Ver imagenes
                         </button>
                     </div>
@@ -127,7 +140,9 @@
                         <input type="text" hidden name="list_delete" 
                         value={JSON.stringify(listDeleteToForm)}
                         >
-                        <button type="submit" class="border hover:border-red-500 hover:text-red-500 border-red-400 rounded-md p-2 cursor-pointer">
+                        <button type="submit" class="border hover:text-red-500 focus:text-red-500 rounded-md p-2 cursor-pointer"
+                        onfocus={(e) => cancelFocus(e)}
+                        >
                             Editar
                         </button>
                     </div>

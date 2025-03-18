@@ -19,6 +19,15 @@
 
     let formMessage = $state('');
 
+    function cancelFocus (e: FocusEvent) {
+        const target = e.target as HTMLButtonElement;
+        if (target) {
+            setTimeout(() => {
+                target.blur();
+            }, 200)
+        }
+    }
+
     $effect(() => {
         if (formMessage) {
             setTimeout(() => {
@@ -77,13 +86,17 @@
                         />
                     </div> -->
                     <div class="flex flex-col gap-2 place-items-center">
-                        <button type="submit" class="border hover:border-red-500 hover:text-red-500 border-red-400 rounded-md p-2 cursor-pointer">
+                        <button type="submit" class="border hover:text-red-500 rounded-md p-2 cursor-pointer"
+                        onfocus={(e) => cancelFocus(e)}
+                        >
                             Eliminar
                         </button>
                     </div>
                     {#if catalogId}
                     <div class="flex flex-col gap-2 place-items-center">
-                        <button formaction="?/remove_product_to_catalog" type="submit" class="border hover:border-red-500 hover:text-red-500 border-red-400 rounded-md p-2 cursor-pointer">
+                        <button formaction="?/remove_product_to_catalog" type="submit" class="border hover:text-red-500 focus:text-red-500 rounded-md p-2 cursor-pointer"
+                        onfocus={(e) => cancelFocus(e)}
+                        >
                             Quitar del catálogo
                         </button>
                     </div>

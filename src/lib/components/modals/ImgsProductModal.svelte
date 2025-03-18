@@ -72,6 +72,28 @@
         toggleImgsProductModalIsVisible(false);
     }
 
+    function cancelFocus (e: FocusEvent) {
+        const target = e.target as HTMLButtonElement;
+        if (target) {
+            setTimeout(() => {
+                target.blur();
+            }, 200)
+        }
+    }
+
+    function preloadImgs () {
+        productSelected?.imgs.forEach((productImg) => {
+            const img = new Image();
+            img.src = productImg.url;
+        })
+    }
+
+    $effect(() => {
+        if (productSelected) {
+            preloadImgs();
+        }
+    })
+
 </script>
 
 {#if imgsProductModalIsVisible }
@@ -82,7 +104,7 @@
                     {#if !imgSalt}
                     <div in:scale class="flex flex-col  max-h-full relative place-items-center box-border">
                         <div class="relative max-h-full box-border">
-                            <img class=" object-contain relative box-border max-h-[26rem]" src={productSelected?.imgs[imgIndex].url} alt={productSelected?.product.name} loading="lazy" 
+                            <img class=" object-contain relative box-border max-h-[26rem]" src={productSelected?.imgs[imgIndex].url} alt={productSelected?.product.name}
                             draggable="false"
                             
                             >
@@ -100,20 +122,23 @@
                     </div>
                     {/if}
                     <div class="flex flex-row gap-3 text-3xl">
-                        <button class="border rounded-full p-1 cursor-pointer {prevImgIsValid() ? 'hover:text-red-500 hover:border-red-500': 'opacity-50'}"
+                        <button class="border rounded-full p-1 cursor-pointer {prevImgIsValid() ? 'hover:text-red-500 hover:border-red-500 focus:text-red-500 focus:bg-stone-800': 'opacity-50'}"
                         onclick={prevImg}
+                        onfocus={(e) => cancelFocus(e)}
                         >
                             <Icon icon="mingcute:left-fill" />
                         </button>
-                        <button class="border rounded-full p-1 cursor-pointer {nextImgIsValid() ? 'hover:text-red-500 hover:border-red-500': 'opacity-50'}"
+                        <button class="border rounded-full p-1 cursor-pointer {nextImgIsValid() ? 'hover:text-red-500 hover:border-red-500 focus:text-red-500 focus:bg-stone-800': 'opacity-50'}"
                         onclick={nextImg}
+                        onfocus={(e) => cancelFocus(e)}
                         >
                             <Icon icon="mingcute:right-fill" />
                         </button>
                     </div>
                     <div class="flex flex-row place-items-center ml-auto">
-                        <button class="border rounded-full cursor-pointer p-1 hover:text-red-500 hover:border-red-500"
+                        <button class="border rounded-full cursor-pointer p-1 hover:text-red-500 hover:border-red-500 focus:text-red-500 focus:bg-stone-800"
                         onclick={closeModal}
+                        onfocus={(e) => cancelFocus(e)}
                         >
                             <Icon icon="material-symbols:close-rounded" class="text-3xl" />
                         </button>

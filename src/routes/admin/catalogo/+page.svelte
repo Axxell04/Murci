@@ -67,7 +67,15 @@
 
         return list;
     }
-    
+
+    function cancelFocus (e: FocusEvent) {
+        const target = e.target as HTMLButtonElement;
+        if (target) {
+            setTimeout(() => {
+                target.blur();
+            }, 300)
+        }
+    } 
 
     // Effects
 
@@ -81,8 +89,9 @@
 <div in:fade class="flex flex-col gap-2 px-5 py-5">
     <section class="flex flex-col gap-3 ">
         <div class="sticky top-0 z-10 bg-stone-900/95 backdrop-blur-md place-content-around flex flex-row p-3 gap-2 place-items-center">
-            <button class="flex flex-row gap-1 border rounded-md p-1 hover:text-red-500 cursor-pointer place-items-center"
+            <button class="flex flex-row gap-1 border rounded-md p-1 hover:text-red-500 focus:text-red-500 cursor-pointer place-items-center"
             onclick={() => toggleAddCatalogModalIsVisible(true)}
+            onfocus={(e) => cancelFocus(e)}
             >
                 <Icon icon="material-symbols:add-rounded" class="text-3xl" />
                 <span style="font-family: Nunito;">

@@ -77,6 +77,7 @@ export const actions: Actions = {
     goto_page: async (event) => {
         const formData = await event.request.formData();
         let gotoPage = 0;
+        const catalogId = event.locals.catalogId;
 
         try {
             gotoPage = parseInt(formData.get('goto_page') as string);
@@ -87,7 +88,7 @@ export const actions: Actions = {
             return fail(400, { message: 'Invalid pagination params' })
         }
 
-        const pagination = await getProducts(gotoPage);
+        const pagination = await getProducts(gotoPage, undefined, catalogId);
 
         return {
             pagination: pagination

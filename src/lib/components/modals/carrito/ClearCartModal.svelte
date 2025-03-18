@@ -14,6 +14,15 @@
 
     let formMessage = $state('');
 
+    function cancelFocus (e: FocusEvent) {
+        const target = e.target as HTMLButtonElement;
+        if (target) {
+            setTimeout(() => {
+                target.blur();
+            }, 200)
+        }
+    }
+
 </script>
 
 {#if clearCartModalIsVisible}
@@ -39,10 +48,13 @@
             <div class="flex flex-row gap-2 place-content-center">
                 <button type="button" class="py-1 px-2 rounded border hover:text-red-500 focus:text-red-500"
                 onclick={() => toggleClearCartModalIsVisible(false)}
+                onfocus={(e) => cancelFocus(e)}
                 >
                     Cancelar
                 </button>
-                <button class="py-1 px-2 rounded bg-red-400 text-stone-900 border hover:bg-red-500 focus:bg-red-500">
+                <button class="py-1 px-2 rounded bg-red-400 text-stone-900 border hover:bg-red-500 focus:bg-red-500"
+                onfocus={(e) => cancelFocus(e)}
+                >
                     Confirmar
                 </button>
             </div>

@@ -58,6 +58,15 @@
         cart = [];
     }
 
+    function cancelFocus (e: FocusEvent) {
+        const target = e.target as HTMLButtonElement;
+        if (target) {
+            setTimeout(() => {
+                target.blur();
+            }, 200)
+        }
+    }
+
     $effect(() => {
         cart;
         if (typeof btnUpdateCartElement !== 'undefined') {
@@ -74,14 +83,17 @@
             Carrito de compras
         </div>
         <div class="flex flex-wrap gap-3 place-content-center">
-            <button class="flex flex-row gap-1 border py-2 px-2 rounded-full place-items-center hover:text-red-500 focus:text-red-500">
+            <button class="flex flex-row gap-1 border py-2 px-2 rounded-full place-items-center hover:text-red-500 focus:text-red-500"
+            onfocus={(e) => cancelFocus(e)}
+            >
                 <Icon icon="bi:cart-check-fill" class="text-2xl" />
                 <span>
                     Realizar
                 </span>
             </button>
             <button class="flex flex-row gap-1 border py-2 px-2 rounded-full place-items-center hover:text-red-500 focus:text-red-500"
-            onclick={() => toggleClearCartModalIsVisible(true)}
+            onclick={() => {if (cart.length > 0) {toggleClearCartModalIsVisible(true)}}}
+            onfocus={(e) => cancelFocus(e)}
             >
                 <Icon icon="bi:cart-x-fill" class="text-2xl" />
                 <span>
@@ -110,13 +122,19 @@
                             Cantidad
                         </span>
                         <div class="flex flex-row gap-2 place-items-center text-lg">
-                            <button class="p-1 border rounded-full hover:text-red-500 focus:text-red-500" onclick={() => subtract(purchaseDetail)}>
+                            <button class="p-1 border rounded-full hover:text-red-500 focus:text-red-500" 
+                            onclick={() => subtract(purchaseDetail)}
+                            onfocus={(e) => cancelFocus(e)}
+                            >
                                 <Icon icon="octicon:dash-16" />
                             </button>
                             <span>
                                 {purchaseDetail.amount}
                             </span>
-                            <button class="p-1 border rounded-full hover:text-red-500 focus:text-red-500" onclick={() => addProduct(purchaseDetail)}>
+                            <button class="p-1 border rounded-full hover:text-red-500 focus:text-red-500" 
+                            onclick={() => addProduct(purchaseDetail)}
+                            onfocus={(e) => cancelFocus(e)}
+                            >
                                 <Icon icon="ic:round-plus" />
                             </button>
                         </div>

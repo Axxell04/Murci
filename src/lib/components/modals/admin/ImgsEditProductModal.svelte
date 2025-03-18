@@ -29,6 +29,15 @@
         }
     }
 
+    function cancelFocus (e: FocusEvent) {
+        const target = e.target as HTMLButtonElement;
+        if (target) {
+            setTimeout(() => {
+                target.blur();
+            }, 200)
+        }
+    }
+
     const inListDelete = () => listDelete.includes(imgIndex);
 
 </script>
@@ -47,7 +56,10 @@
             </button>
             {#if listDelete.length > 0}
             <div transition:scale class="flex flex-row gap-2" >
-                <button class="cursor-pointer hover:text-red-500" onclick={()=>updateListDelete([])}>
+                <button class="cursor-pointer hover:text-red-500 focus:text-red-500" 
+                onclick={()=>updateListDelete([])}
+                onfocus={(e) => cancelFocus(e)}
+                >
                     <span>
                         {listDelete.length} Descartar
                     </span>
