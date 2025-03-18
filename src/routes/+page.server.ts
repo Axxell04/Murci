@@ -5,6 +5,8 @@ import { getCatalogs } from "$lib/server/catalog";
 
 export const load: PageServerLoad = async (event) => {
     const catalogId = event.locals.catalogId;
+
+    const cart = event.locals.cart;
     
     const pagination = await getProducts(undefined, undefined, catalogId ?? undefined);
     const catalogs = await getCatalogs();
@@ -12,7 +14,8 @@ export const load: PageServerLoad = async (event) => {
     return {
         pagination: pagination,
         catalogId: catalogId,
-        catalogs: catalogs
+        catalogs: catalogs,
+        cart: cart
     }
 };
 
@@ -108,5 +111,11 @@ export const actions: Actions = {
         return {
             pagination: pagination
         }
+    },
+    update_cart: async (event) => {
+        const formData = await event.request.formData();
+        const cart = formData.get('cart') as string;
+
+        event.cookies.set('cart', cart, { path: '/' })
     }
 }

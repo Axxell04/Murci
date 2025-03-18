@@ -58,13 +58,21 @@
         }
     })
 
-    
+    $effect(() => {
+        if (typeof window !== 'undefined') {
+            if (addProductToCatalogModalIsVisible) {
+                if (typeof btnGetProducts !== 'undefined') {
+                    btnGetProducts.click();
+                }
+            } 
+        }
+    })
 
 </script>
 
 {#if addProductToCatalogModalIsVisible }
     <div transition:fade={{duration: 200}}>
-        <ContainerModal toggleModal={toggleAddProductToCatalogModalIsVisible} visible={addProductToCatalogModalIsVisible} cancelClick={true}>
+        <ContainerModal toggleModal={toggleAddProductToCatalogModalIsVisible} cancelClick={true}>
                 <form action="?/get_products" method="post" use:enhance={() => {
                     return async ({ result }) => {
                         if (result.type === "failure") {

@@ -10,6 +10,7 @@
 	import Icon from "@iconify/svelte";
 	import ImgsProductModal from "$lib/components/modals/ImgsProductModal.svelte";
 	import { enhance } from "$app/forms";
+	import Toast from "$lib/components/Toast.svelte";
 
     let { data }: PageProps = $props();
 
@@ -23,8 +24,12 @@
     let catalogs = $state(data.catalogs);
     let catalogId = $state(data.catalogId ?? '');
 
+    // Cart
+    let cart = $state(data.cart);
+
     // HTML Elements
     let selectCatalogElement: HTMLButtonElement | undefined = $state();
+    let btnUpdateCartElement: HTMLButtonElement | undefined = $state();
 
     let selectCatalogElementHeight: number = $state(9);
 
@@ -41,6 +46,9 @@
     let productModalIsVisible = $state(false);
     let gotoPageListIsVisible = $state(false);
     let catalogListIsVisible = $state(false);
+
+    // Toast
+    let toastMessage = $state('');
 
 
     // Toggle Visible Elements
@@ -66,18 +74,33 @@
         }
     }
 
+    ///////
 
-    function updatePagination (e: Event) {
-        const inputE = e as InputEvent;
-        const target = e.target as HTMLInputElement;
-        // console.log(isNaN(parseInt(inputE.data ?? "")));
-        // console.log(inputE)
-        if (isNaN(parseInt(inputE.data ?? "")) && inputE.inputType !== "deleteContentBackward") {
-            e.preventDefault();
-            target.value = target.value.slice(0, -1);
+    function addToCart () {
+        if (typeof productSelected === 'undefined') { return };
 
+        const indexDetail = cart.findIndex((des) => des.product.product.id === productSelected?.product.id);
+
+        if (indexDetail !== -1) {
+            // cart = [...cart, {product: cart[indexDetail].product, amount: cart[indexDetail].amount + 1}];
+            cart = cart.map((pd, index) => {
+                if (index === indexDetail) {
+                    return {
+                        product: cart[indexDetail].product,
+                        amount: cart[indexDetail].amount + 1
+                    }
+                } else {
+                    return pd
+                }
+            })
+        } else {
+            cart = [...cart, { product: productSelected, amount: 1 }]
         }
-        
+
+        toastMessage = 'Producto añadido al carrito'
+        setTimeout(() => {
+            toastMessage = ''
+        }, 3000);
     }
 
     function setProductPagination (newProductPagination: ProductPagination) {
@@ -105,6 +128,16 @@
             selectCatalogElementHeight = selectCatalogElement.clientHeight;
         }
     })
+
+    //Update cart locals
+    $effect(() => {        
+        cart;
+        if (typeof btnUpdateCartElement !== 'undefined') {
+            btnUpdateCartElement.click();
+        }
+    })
+
+    $inspect(cart);
 
 </script>
 
@@ -234,9 +267,11 @@
                 <a href="/carrito" class="flex flex-row gap-1 justify-end self-end place-items-center hover:text-red-500">
                     <div class="relative flex flex-col place-items-center">
                         <Icon icon="bi:cart-fill" class="text-4xl" />
+                        {#if cart.length}
                         <span class="block absolute -top-2 -right-2 rounded-full font-bold text-lg bg-stone-900 text-red-400 border border-red-400 px-2 ">
-                            3
-                        </span>
+                            {cart.length}
+                        </span>                            
+                        {/if}
                     </div>
                 </a>
             </div>
@@ -249,5 +284,25 @@
     </section>
 </div>
 
-<!-- <ProductModal {productModalIsVisible} {toggleProductModalIsVisible} {productSelected} /> -->
-<ImgsProductModal {productSelected} imgsProductModalIsVisible={productModalIsVisible} toggleImgsProductModalIsVisible={toggleProductModalIsVisible} />
+<form action="?/update_cart" method="post" use:enhance={() => {
+    return async ({ result }) => {
+        if (result.type === 'success') {
+
+        }
+    }
+}}
+class="hidden"
+>
+    <input type="hidden" name="cart" value={JSON.stringify(cart)}>
+    <button bind:this={btnUpdateCartElement} type="submit">
+        Update Cart
+    </button>
+</form>
+
+<Toast message={toastMessage} />
+
+<ImgsProductModal {productSelected} imgsProductModalIsVisible={productModalIsVisible} toggleImgsProductModalIsVisible={toggleProductModalIsVisible}>
+    <button class="px-2 py-1 border rounded-full hover:text-red-500" onclick={addToCart}>
+        Añadir al carrito
+    </button>
+</ImgsProductModal>

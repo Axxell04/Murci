@@ -16,6 +16,13 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 		event.locals.catalogId = '';
 	}
 
+	const cart = event.cookies.get('cart');
+	if (cart) {
+		event.locals.cart = JSON.parse(cart);
+	} else {
+		event.locals.cart = [];
+	}
+
 	const sessionToken = event.cookies.get(auth.sessionCookieName);
 	if (!sessionToken) {
 		event.locals.user = null;
