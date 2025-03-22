@@ -47,6 +47,14 @@ export const productCatalog = sqliteTable('product_catalog', {
 	catalogId: text('catalog_id').notNull().references(() => catalog.id)
 })
 
+// CONTACTO
+export const contact = sqliteTable('contact', {
+	id: text('id').primaryKey(),
+	icon: text('icon').notNull(),
+	text: text('text').notNull(),
+	url: text('url').notNull()
+})
+
 export type Session = typeof session.$inferSelect;
 
 export type User = typeof user.$inferSelect;
@@ -58,3 +66,5 @@ export type Img = typeof img.$inferInsert;
 export type Catalog = typeof catalog.$inferInsert;
 
 export type ProductCatalog = typeof productCatalog.$inferInsert;
+
+export type Contact = typeof contact.$inferInsert;
