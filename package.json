@@ -21,6 +21,7 @@
 		"@eslint/js": "^9.18.0",
 		"@iconify/svelte": "^4.2.0",
 		"@sveltejs/adapter-node": "^5.2.11",
+		"@sveltejs/adapter-vercel": "^5.6.3",
 		"@sveltejs/kit": "^2.16.0",
 		"@sveltejs/vite-plugin-svelte": "^5.0.0",
 		"@tailwindcss/vite": "^4.0.0",
@@ -49,7 +50,6 @@
 		"autoprefixer": "^10.4.20",
 		"dotenv": "^16.4.7",
 		"drizzle-orm": "^0.38.4",
-		"fs": "^0.0.1-security",
 		"nodemailer": "^6.10.0",
 		"postcss": "^8.5.2"
 	}
