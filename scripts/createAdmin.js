@@ -3,7 +3,7 @@ import { hash } from '@node-rs/argon2';
 import { encodeBase32LowerCase } from '@oslojs/encoding';
 import { createClient } from '@libsql/client';
 import { drizzle } from 'drizzle-orm/libsql';
-import * as table from '../src/lib/server/db/schema.ts';
+import * as table from '../src/lib/server/db/schema.js';
 
 // Cargar variables de entorno desde el archivo .env
 config();
