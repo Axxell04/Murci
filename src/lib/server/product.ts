@@ -157,6 +157,7 @@ function generateRandomName () {
 
 async function handleImage (img: File, imgPath: string) {
     console.log(process.cwd())
+    console.log(await fs.readdir(process.cwd()))
     const buffer = await img.arrayBuffer();
     const filePath = env.STATIC_DIR ? path.join(process.cwd(), env.STATIC_DIR, imgPath) : path.join(process.cwd(), imgPath);
     await fs.writeFile(filePath, Buffer.from(buffer),);
