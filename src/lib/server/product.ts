@@ -5,6 +5,7 @@ import path from 'path';
 import { promises as fs } from 'fs';
 import { desc, eq } from 'drizzle-orm';
 import { addProductToCatalog } from './catalog';
+import { env } from '$env/dynamic/private';
 
 export async function createProduct(name: string, price: number, imgs: FileList, catalogId?: string) {
     const productId = generateId();
@@ -15,12 +16,18 @@ export async function createProduct(name: string, price: number, imgs: FileList,
     }
     
     await db.insert(table.product).values(product).execute();
+    // console.log("LastInsertRowid: " + res.lastInsertRowid);
+    
 
     if (imgs.length > 0) {
         for (const img of Array.from(imgs)) {
             const imgId = generateId();
             const imgPath = `/imgs/${generateRandomName()}.webp`;
-            await handleImage(img, imgPath);
+            try {
+                await handleImage(img, imgPath);
+            } catch (error) {
+                console.log(error);
+            }
             await db.insert(table.img).values({
                 id: imgId,
                 url: imgPath,
@@ -128,7 +135,7 @@ export async function deleteImg (id: string, img?: table.Img) {
     }
     if (!img) { return }
     try {
-        const filePath = path.join(process.cwd(), 'static', img.url);
+        const filePath = path.join(process.cwd(), img.url);
         await fs.unlink(filePath);
         await db.delete(table.img).where(eq(table.img.id, id)).execute();
     } catch (error) {
@@ -149,7 +156,8 @@ function generateRandomName () {
 }
 
 async function handleImage (img: File, imgPath: string) {
+    console.log(process.cwd())
     const buffer = await img.arrayBuffer();
-    const filePath = path.join(process.cwd(), 'static', imgPath);
-    await fs.writeFile(filePath, Buffer.from(buffer));
+    const filePath = env.STATIC_DIR ? path.join(process.cwd(), env.STATIC_DIR, imgPath) : path.join(process.cwd(), imgPath);
+    await fs.writeFile(filePath, Buffer.from(buffer),);
 }
