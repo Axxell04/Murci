@@ -5,7 +5,6 @@ import path from 'path';
 import { promises as fs } from 'fs';
 import { desc, eq } from 'drizzle-orm';
 import { addProductToCatalog } from './catalog';
-import { env } from '$env/dynamic/private';
 
 export async function createProduct(name: string, price: number, imgs: FileList, catalogId?: string) {
     const productId = generateId();
@@ -18,19 +17,19 @@ export async function createProduct(name: string, price: number, imgs: FileList,
     await db.insert(table.product).values(product).execute();
     // console.log("LastInsertRowid: " + res.lastInsertRowid);
     
+    const uploadsDir = path.join(process.cwd(), 'uploads', 'imgs');
+    await checkDir(uploadsDir);
+
 
     if (imgs.length > 0) {
         for (const img of Array.from(imgs)) {
             const imgId = generateId();
-            const imgPath = `/imgs/${generateRandomName()}.webp`;
-            try {
-                await handleImage(img, imgPath);
-            } catch (error) {
-                console.log(error);
-            }
+            const imgName = `${generateRandomName()}.webp`;
+            const imgURL = await handleImage(img, imgName);
+
             await db.insert(table.img).values({
                 id: imgId,
-                url: imgPath,
+                url: imgURL,
                 productId: productId
             }).execute();
         }
@@ -91,11 +90,11 @@ export async function updateProduct (product_id: string, name: string, price: nu
             for (const img of Array.from(imgs)) {
                 if (img.name && img.size) {
                     const imgId = generateId();
-                    const imgPath = `/imgs/${generateRandomName()}.webp`;
-                    await handleImage(img, imgPath);
+                    const imgName = `${generateRandomName()}.webp`;
+                    const imgURL = await handleImage(img, imgName);
                     await db.insert(table.img).values({
                         id: imgId,
-                        url: imgPath,
+                        url: imgURL,
                         productId: product_id
                     }).execute();
                 }
@@ -135,7 +134,7 @@ export async function deleteImg (id: string, img?: table.Img) {
     }
     if (!img) { return }
     try {
-        const filePath = path.join(process.cwd(), img.url);
+        const filePath = path.join(process.cwd(), 'uploads', img.url);
         await fs.unlink(filePath);
         await db.delete(table.img).where(eq(table.img.id, id)).execute();
     } catch (error) {
@@ -155,10 +154,26 @@ function generateRandomName () {
     return name;
 }
 
-async function handleImage (img: File, imgPath: string) {
-    console.log(process.cwd())
-    console.log(await fs.readdir(process.cwd()))
+async function handleImage (img: File, imgName: string) {
+    // console.log(process.cwd())
+    // console.log(await fs.readdir(process.cwd()))
+
+    const uploadsDir = path.join(process.cwd(), 'uploads', 'imgs');
+
     const buffer = await img.arrayBuffer();
-    const filePath = env.STATIC_DIR ? path.join(process.cwd(), env.STATIC_DIR, imgPath) : path.join(process.cwd(), imgPath);
-    await fs.writeFile(filePath, Buffer.from(buffer),);
+    const filePath = path.join(uploadsDir, imgName);
+
+    await fs.writeFile(filePath, Buffer.from(buffer));
+
+    const imgURL = `/imgs/${imgName}`;
+
+    return imgURL;
+}
+
+async function checkDir (path: string) {
+    try {
+        await fs.access(path)
+    } catch {
+        await fs.mkdir(path, { recursive: true })
+    }
 }
