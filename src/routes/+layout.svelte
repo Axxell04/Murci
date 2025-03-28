@@ -19,17 +19,31 @@
 		return endPoint;
 	}
 
+	function cancelFocus (e: FocusEvent) {
+        const target = e.target as HTMLButtonElement;
+        if (target) {
+            setTimeout(() => {
+                target.blur();
+            }, 200)
+        }
+    }
+
 	// $inspect(actualRoute);
 </script>
 
 <nav class="flex flex-col place-items-center gap-4 flex-grow">
 	<section class="relative flex place-content-center">
 		<h1 class="text-red-500 font-black text-4xl p-3">
-			<a href="/">
+			<a class="hover:text-red-400 focus:text-red-400" href="/"
+			onfocus={(e) => cancelFocus(e)}
+			>
 				murci
 			</a>
 		</h1>
-		<button class="text-5xl absolute -bottom-4 " onclick={() => goto('/admin')}>
+		<button class="text-5xl absolute -bottom-4 hover:text-red-500 focus:text-red-500" 
+		onclick={() => goto('/admin')}
+		onfocus={(e) => cancelFocus(e)}
+		>
 			<Icon icon="mdi:bat" />
 		</button>
 	</section>
@@ -42,6 +56,15 @@
 					{data.user?.username}
 				</span>
 			</li>
+			{#if data.user.admin}
+			<li class="flex flex-row gap-2">
+				<a href="/admin/cuentas" class="px-1 hover:text-red-400 focus:text-red-400"
+				onfocus={(e) => cancelFocus(e)}
+				>
+					<Icon icon="mdi:badge-account" class="text-3xl" />
+				</a>
+			</li>
+			{/if}
 			<li>
 				<form method="post" action="/admin?/logout">
 					<button class="hover:text-red-400 rounded-md p-1 cursor-pointer">

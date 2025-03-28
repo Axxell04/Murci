@@ -42,7 +42,7 @@
 
 </script>
 
-<a href={contact.url} target="_blank" class="flex flex-row gap-2 place-items-center py-2 px-2 border rounded-2xl w-fit" 
+<a href={contact.url} target="_blank" class="flex flex-row gap-2 place-items-center py-2 px-2 border rounded-xl w-fit" 
 onclick={actualRoute?.includes('/admin') ? (e) => e.preventDefault() : () => {}}
 >
     <Icon {icon} class="text-2xl"/>

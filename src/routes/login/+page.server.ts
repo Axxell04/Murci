@@ -6,6 +6,7 @@ import * as auth from '$lib/server/auth'
 import * as table from '$lib/server/db/schema'
 import { eq } from "drizzle-orm";
 import { verify } from "@node-rs/argon2";
+import { checkUserToken, createUser, useUserToken } from "$lib/server/user";
 
 export const load: PageServerLoad = async (event) => {
     if (event.locals.user) {
@@ -59,6 +60,43 @@ export const actions: Actions = {
 
         return redirect(302, '/admin')
 
+    },
+    register: async (event) => {
+        const formData = await event.request.formData();
+        const username = formData.get('username');
+        const password = formData.get('password');
+        const confirmPassword = formData.get('confirm_password');
+        const userToken = formData.get('user_token')
+
+        if (!validateUsername(username)) {
+            return fail(400, { message: 'Username inválido' })
+        }
+        if (!validatePassword(password) || !validatePassword(confirmPassword)) {
+            return fail(400, { message: 'Contraseña inválida' })
+        }
+        if (!validateUserToken(userToken)) {
+            return fail(400, { message: 'Token inválido' })
+        }
+
+        if (password !== confirmPassword) {
+            return fail(400, { message: 'Las contraseñas no coinciden' })
+        }
+        
+        try {
+            const resToken = await checkUserToken(userToken);
+            if (typeof resToken === 'undefined') {
+                return fail(400, { message: 'El token de usuario no existe' });
+            } else if (!resToken) {
+                return fail(400, { message: 'El token de usuario ya fue utilizado' });
+            }
+            await useUserToken(userToken);
+            await createUser(username, password);
+            
+        } catch (error) {
+            console.log(error)
+            return fail(500, { message: 'A ocurrido un error en el servidor' });
+        }
+        
     }
 }
 
@@ -81,4 +119,8 @@ function validateUsername(username: unknown): username is string {
 
 function validatePassword(password: unknown): password is string {
 	return typeof password === 'string' && password.length >= 6 && password.length <= 255;
+}
+
+function validateUserToken(userToken: unknown): userToken is string {
+	return typeof userToken === 'string';
 }

@@ -19,6 +19,12 @@ export const session = sqliteTable('session', {
     expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull()
 });
 
+export const user_token = sqliteTable('user_token', {
+    id: text('id').primaryKey(),
+    text: text('text').notNull(),
+    active: integer('active', {mode: "boolean"}).notNull().default(true)	
+})
+
 // NEGOCIO
 
 export const product = sqliteTable('product', {
@@ -68,3 +74,5 @@ export const Catalog = catalog.$inferInsert;
 export const ProductCatalog = productCatalog.$inferInsert;
 
 export const Contact = contact.$inferInsert;
+
+export const UserToken = user_token.$inferInsert;

@@ -6,6 +6,7 @@
 	import AddContactModal from "$lib/components/modals/admin/contacto/AddContactModal.svelte";
 	import EditContactModal from "$lib/components/modals/admin/contacto/EditContactModal.svelte";
 	import DeleteContactModal from "$lib/components/modals/admin/contacto/DeleteContactModal.svelte";
+	import Icon from "@iconify/svelte";
 
     let { data }:PageProps = $props();
 
@@ -63,12 +64,15 @@
 </script>
 
 <div in:fade class="flex flex-col gap-2 px-5 py-5 place-items-center">
-    <div class="flex flex-col p-2">
-        <button class="border py-2 px-3 rounded-xl hover:text-red-500 focus:text-red-500"
+    <div class="flex flex-col p-3">
+        <button class="flex flex-row gap-1 border p-1 rounded-md hover:text-red-500 focus:text-red-500 place-items-center"
         onfocus={(e) => cancelFocus(e)}
         onclick={() => toggleAddContactModalIsVisible(true)}
         >
-            Añadir contacto
+            <Icon icon="material-symbols:add-rounded" class="text-3xl" />
+            <span style="font-family: Nunito;">
+                Añadir Contacto
+            </span>
         </button>
     </div>
     <div class="flex flex-wrap gap-2 justify-center">
