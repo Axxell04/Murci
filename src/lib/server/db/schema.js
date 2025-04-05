@@ -53,6 +53,14 @@ export const productCatalog = sqliteTable('product_catalog', {
     catalogId: text('catalog_id').notNull().references(() => catalog.id)
 });
 
+export const order = sqliteTable('order', {
+    id: text('id').primaryKey(),
+    content: text('content', { mode: 'json' }).notNull(),
+    completed: integer('completed', { mode: 'boolean' }).notNull().default(false),
+    contact: text('contact').notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`CURRENT_TIMESTAMP`)
+})
+
 // CONTACTO
 export const contact = sqliteTable('contact', {
     id: text('id').primaryKey(),
@@ -76,3 +84,5 @@ export const ProductCatalog = productCatalog.$inferInsert;
 export const Contact = contact.$inferInsert;
 
 export const UserToken = user_token.$inferInsert;
+
+export const Order = order.$inferInsert;

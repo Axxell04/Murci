@@ -1,0 +1,265 @@
+<script lang="ts">
+
+	import ProductCard from "$lib/components/ProductCard.svelte";
+	import { onMount } from "svelte";
+	import { fade, scale, slide } from "svelte/transition";
+	import type { PageProps } from "./$types";
+	import ContainerModal from "$lib/components/modals/ContainerModal.svelte";
+	import ProductModal from "$lib/components/modals/ProductModal.svelte";
+	import type { Product, ProductComplete, ProductPagination } from "$lib/interfaces/product";
+	import Icon from "@iconify/svelte";
+	import ImgsProductModal from "$lib/components/modals/ImgsProductModal.svelte";
+	import { enhance } from "$app/forms";
+	import Toast from "$lib/components/Toast.svelte";
+	import type { Order, OrderPagination } from "$lib/interfaces/order";
+
+    let { data }: PageProps = $props();
+
+    // Pagination Data
+    // let pendingOrdersPagination: OrderPagination = $state(data.pendingOrders);
+    // let completedOrdersPagination: OrderPagination = $state(data.completedOrders);
+    let orderPagination: OrderPagination = $state(data.orderPagination)
+    let orders: Order[] = $derived(orderPagination.orders);
+    // let pendingOrders: Order[] = $derived(pendingOrdersPagination.orders); 
+    // let completedOrders: Order[] = $derived(completedOrdersPagination.orders);
+
+    let gotoPage: number | undefined = $state();
+
+    // View State
+    let viewState = $state('pending');
+
+    // HTML Elements
+    let selectStateElement: HTMLButtonElement | undefined = $state();
+
+    let selectStateElementHeight: number = $state(9);
+
+    // Selected Elements
+    let orderSelected: Order | undefined = $state();
+
+    function selectThisOrder (order: Order) {
+        orderSelected = order;
+    }
+
+    // Visible Elements
+    let gotoPageListIsVisible = $state(false);
+    let stateListIsVisible = $state(false);
+
+    // Toast
+    let toastMessage = $state('');
+
+
+    // Toggle Visible Elements
+    function toggleGotoPageListIsVisible (visible?: boolean) {
+        if (typeof visible !== "undefined") {
+            gotoPageListIsVisible = visible;
+        } else {
+            gotoPageListIsVisible = !gotoPageListIsVisible;
+        }
+    }
+
+    function toggleStateListIsVisible (visible?: boolean) {
+        if (typeof visible !== "undefined") {
+            stateListIsVisible = visible;
+        } else {
+            stateListIsVisible = !stateListIsVisible;
+        }
+    }
+
+    ///////
+
+    function setOrderPagination (newOrderPagination: OrderPagination) {
+        orderPagination = newOrderPagination;
+    }
+
+    function createListPages (totalPages: number) {
+        let list = []
+        for (let index = 1; index <= totalPages; index++) {
+            list.push(index);
+        }
+
+        return list;
+    }
+
+    function cancelFocus (e: FocusEvent) {
+        const target = e.target as HTMLButtonElement;
+        if (target) {
+            setTimeout(() => {
+                target.blur();
+            }, 200)
+        }
+    }
+ 
+    // Effects
+
+    $effect(() => {
+        orderPagination;
+        scrollTo({behavior: 'smooth', top: 170})
+    });
+
+    $effect(() => {
+        if (typeof selectStateElement !== 'undefined' && stateListIsVisible) {
+            selectStateElementHeight = selectStateElement.clientHeight;
+        }
+    })
+
+</script>
+
+<div in:fade class="flex flex-col gap-2 max-w-full max-h-full">
+    <section class="px-10 w-full sticky -top-1 z-10 bg-stone-900/95 backdrop-blur-lg">
+        <div class="flex flex-wrap gap-3 place-items-center place-content-between text-center text-red-400 font-normal p-4 border border-transparent border-b-red-400">
+            <div class="flex flex-row gap-2 place-items-center">
+                <form action="?/set_view_state" method="post" use:enhance={() => {
+                    return async ({ result }) => {
+                        if (result.type === "success") {
+                            if (result.data?.orderPagination) {
+                                setOrderPagination(result.data.orderPagination as OrderPagination);
+                            }
+                        }
+                    }
+                }}
+                class="flex flex-col place-content-center relative"
+                >
+                    <input type="text" hidden name="view_state" value={viewState} />
+                    <button bind:this={selectStateElement} type="button" class="text-center text-2xl bg-transparent outline-none hover:text-red-500 focus:text-red-500" 
+                    onclick={()=>toggleStateListIsVisible()}
+                    onfocus={(e) => cancelFocus(e)}
+                    >
+                        {#if viewState === 'pending'}
+                        Pendientes
+                        {:else if viewState === 'completed'}
+                        Completados
+                        {/if}
+                    </button>
+                    {#if stateListIsVisible}                        
+                    <div transition:scale class="absolute flex flex-col text-2xl rounded-b-md border bg-stone-900/95 max-h-60 overflow-y-auto place-self-center z-10"
+                    style="top: {selectStateElementHeight}px;"
+                    >
+                        <ul>
+                            <li>
+                                <button class="hover:bg-stone-800 focus:bg-stone-800 px-2 py-1 w-full {viewState === 'completed' ? '' : 'text-red-500'}" onclick={()=>{viewState = 'pending'; toggleStateListIsVisible(false)}}>
+                                    Pendientes
+                                </button>
+                            </li>
+                            <li>
+                                <button class="hover:bg-stone-800 focus:bg-stone-800 px-2 py-1 w-full {viewState === 'pending' ? '' : 'text-red-500'}" onclick={()=>{viewState = 'completed'; toggleStateListIsVisible(false)}}>
+                                    Completados
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    {/if}
+                </form>
+                <form action="?/prev_page" method="post" use:enhance={() => {
+                    return async ({ result }) => {
+                        if (result.type === "success") {
+                            if (result.data?.orderPagination) {
+                                setOrderPagination(result.data.orderPagination as OrderPagination);
+                            }
+                        }
+                    }
+                }}
+                class="flex flex-col place-content-center"
+                >
+                    <input type="number" hidden name="current_page" value={orderPagination.currentPage}>
+                    <input type="number" hidden name="total_pages" value={orderPagination.totalPages}>
+                    <input type="hidden" name="view_state" value={viewState}>
+                    {#if orderPagination.currentPage > 1}
+                    <button class="hover:text-red-500 focus:text-red-500" onfocus={(e) => cancelFocus(e)}>
+                        <Icon icon="icon-park-outline:left-c" class="text-3xl" />
+                    </button>
+                    {:else}
+                    <button class="opacity-50" disabled>
+                        <Icon icon="icon-park-outline:left-c" class="text-3xl" />
+                    </button>
+                    {/if}
+                </form>
+                <form action="?/goto_page" method="post" use:enhance={() => {
+                    return async ({ result }) => {
+                        if (result.type === "success") {
+                            if (result.data?.orderPagination) {
+                                setOrderPagination(result.data.orderPagination as OrderPagination);
+                                gotoPage = undefined;
+                            }
+                        }
+                    }
+                }}
+                class="flex flex-col place-content-center relative"
+                >
+                    <input type="number" hidden name="goto_page" value={gotoPage} >
+                    <input type="hidden" name="view_state" value={viewState}>
+                    <button type="button" class="w-10 text-center text-3xl bg-transparent h-9 outline-none hover:text-red-500 focus:text-red-500" 
+                    onclick={()=>toggleGotoPageListIsVisible()}
+                    onfocus={(e) => cancelFocus(e)}
+                    >
+                        {orderPagination.currentPage}
+                    </button>
+                    {#if gotoPageListIsVisible}                        
+                    <div transition:scale class="absolute top-9 flex flex-col text-3xl rounded-b-md border bg-stone-900/95 max-h-65 overflow-y-auto place-self-center">
+                        <ul>
+                            {#each createListPages(orderPagination.totalPages) as page}
+                            <li>
+                                <button class="hover:bg-stone-800 focus:bg-stone-800 focus:text-red-500 px-2 py-1 w-full" 
+                                onclick={()=>{gotoPage = page; toggleGotoPageListIsVisible(false)}}
+                                onfocus={(e) => cancelFocus(e)}
+                                >
+                                    {page}
+                                </button>
+                            </li>
+                            {/each}
+                        </ul>
+                    </div>
+                    {/if}
+                </form>
+                <form action="?/next_page" method="post" use:enhance={() => {
+                    return async ({ result }) => {
+                        if (result.type === "success") {
+                            if (result.data?.orderPagination) {
+                                setOrderPagination(result.data.orderPagination as OrderPagination);
+                            }
+                        }
+                    }
+                }}
+                class="flex flex-col place-content-center"
+                >
+                    <input type="number" hidden name="current_page" value={orderPagination.currentPage}>
+                    <input type="number" hidden name="total_pages" value={orderPagination.totalPages}>
+                    <input type="hidden" name="view_state" value={viewState}>
+                    {#if orderPagination.currentPage < orderPagination.totalPages}
+                    <button class="hover:text-red-500 focus-within:text-red-500" onfocus={(e) => cancelFocus(e)}>
+                        <Icon icon="icon-park-outline:right-c" class="text-3xl" />
+                    </button>
+                    {:else}    
+                    <button class="opacity-50" disabled>
+                        <Icon icon="icon-park-outline:right-c" class="text-3xl" />
+                    </button>
+                    {/if}
+                </form>
+            </div>
+		</div>
+	</section>
+    <section class="flex flex-wrap justify-center p-2 gap-3">
+        {#each orders as order}
+            <div class="flex flex-col gap-2 p-2 rounded-md">
+                <span>
+                    ID: {order.id}
+                </span>
+                <span>
+                    Contacto: {order.contact}
+                </span>
+                <span>
+                    Contenido: {order.content}
+                </span>
+                <span>
+                    Fecha: {order.createdAt}
+                </span>
+                <span>
+                    Completado: {order.completed}
+                </span>
+            </div>
+        {/each}
+    </section>
+</div>
+
+<Toast message={toastMessage} />
+
+

@@ -6,9 +6,23 @@
 	import NavItem from '$lib/components/NavItem.svelte';
 	import { goto } from '$app/navigation';
 	import type { LayoutData, LayoutProps } from './$types';
+	import { scale } from 'svelte/transition';
 	let { data, children }: LayoutProps = $props();
 
 	let actualRoute = $derived(page.route.id);
+
+	let btnCardSelectNav: HTMLButtonElement | undefined = $state();
+	let btnCardSelectNavHeight = $state(41)
+
+	let cardSelectNavMenuIsVisible = $state(false);
+
+	function toggleCardSelectNavMenuIsVisible (visible?: boolean) {
+		if (typeof visible === 'undefined') {
+			cardSelectNavMenuIsVisible = !cardSelectNavMenuIsVisible;
+		} else {
+			cardSelectNavMenuIsVisible = visible;
+		}
+	}
 
 	function validityAnchor (endPoint: string) {
 		if (data.user && actualRoute) {
@@ -27,6 +41,12 @@
             }, 200)
         }
     }
+
+	$effect(() => {
+		if (typeof btnCardSelectNav !== 'undefined') {
+			btnCardSelectNavHeight = btnCardSelectNav.clientHeight
+		}
+	})
 
 	// $inspect(actualRoute);
 </script>
@@ -49,7 +69,7 @@
 	</section>
 	{#if data.user}
 	<section class="flex flex-row gap-4 px-2">
-		<ul class="flex flex-row gap-10 text-red-500 font-semibold place-items-center">
+		<ul class="flex flex-row gap-6 text-red-500 relative font-semibold place-items-center">
 			<li class="flex flex-row gap-2">
 				<Icon icon="mdi:account" class="text-2xl" />
 				<span class="text-red-400">	
@@ -65,6 +85,32 @@
 				</a>
 			</li>
 			{/if}
+			<li class="flex flex-row gap-2 relative h-full">
+				<button bind:this={btnCardSelectNav} class="px-1 hover:text-red-400 focus:text-red-400 h-full w-full"
+				onclick={() => toggleCardSelectNavMenuIsVisible()}
+				onfocus={(e) => cancelFocus(e)}
+				>
+					<Icon icon="bxs:credit-card" class="text-3xl" />
+				</button>
+				{#if cardSelectNavMenuIsVisible}                        
+				<div transition:scale class="absolute flex flex-col rounded-b-md border bg-stone-900/95 place-self-center z-10"
+				style="top: {btnCardSelectNavHeight}px;"
+				>
+					<a href="/admin/balance" class="hover:bg-stone-800 focus:bg-stone-800 px-2 py-1 w-full" 
+					onclick={()=>{toggleCardSelectNavMenuIsVisible(false)}}
+					onfocus={(e) => cancelFocus(e)}
+					>
+						Balance
+					</a>
+					<a href="/admin/pedidos" class="hover:bg-stone-800 focus:bg-stone-800 px-2 py-1 w-full rounded-b-md" 
+					onclick={()=>{toggleCardSelectNavMenuIsVisible(false)}}
+					onfocus={(e) => cancelFocus(e)}
+					>
+						Pedidos
+					</a>
+				</div>
+				{/if}
+			</li>
 			<li>
 				<form method="post" action="/admin?/logout">
 					<button class="hover:text-red-400 rounded-md p-1 cursor-pointer">
