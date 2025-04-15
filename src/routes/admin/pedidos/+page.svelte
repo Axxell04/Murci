@@ -12,6 +12,7 @@
 	import { enhance } from "$app/forms";
 	import Toast from "$lib/components/Toast.svelte";
 	import type { Order, OrderPagination } from "$lib/interfaces/order";
+	import type { PurchaseDetail } from "$lib/interfaces/cart";
 
     let { data }: PageProps = $props();
 
@@ -30,6 +31,7 @@
 
     // HTML Elements
     let selectStateElement: HTMLButtonElement | undefined = $state();
+    let btnGetOrders: HTMLButtonElement | undefined = $state();
 
     let selectStateElementHeight: number = $state(9);
 
@@ -102,6 +104,13 @@
         }
     })
 
+    $effect(() => {
+        viewState;
+        if (typeof btnGetOrders !== 'undefined') {
+            // btnGetOrders.click();
+        }
+    });
+
 </script>
 
 <div in:fade class="flex flex-col gap-2 max-w-full max-h-full">
@@ -113,6 +122,7 @@
                         if (result.type === "success") {
                             if (result.data?.orderPagination) {
                                 setOrderPagination(result.data.orderPagination as OrderPagination);
+                                console.log(result.data.orderPagination);
                             }
                         }
                     }
@@ -239,26 +249,60 @@
 	</section>
     <section class="flex flex-wrap justify-center p-2 gap-3">
         {#each orders as order}
-            <div class="flex flex-col gap-2 p-2 rounded-md">
-                <span>
-                    ID: {order.id}
-                </span>
-                <span>
-                    Contacto: {order.contact}
-                </span>
-                <span>
-                    Contenido: {order.content}
-                </span>
-                <span>
-                    Fecha: {order.createdAt}
-                </span>
-                <span>
-                    Completado: {order.completed}
+            <div class="flex flex-col gap-2 p-2 rounded-md bg-stone-800 self-start"
+            style="box-shadow: oklch(70.4% 0.191 22.216)  0px 0px 5px;"
+            >
+                <div class="flex flex-row gap-2 place-items-center place-content-between">
+                    <div class="flex flex-row place-content-between gap-2 px-1 text-xl place-items-center">
+                        <Icon icon="akar-icons:shopping-bag" class="text-3xl"/>
+                        <span class="translate-y-1">
+                            {(order.content as PurchaseDetail[]).length}
+                        </span>
+                    </div>
+                    <div class="flex flex-row gap-2 text-xl place-items-center">
+                        <Icon icon="ic:outline-whatsapp" class="text-3xl" />
+                        <span>
+                            {order.contact}
+                        </span>
+                    </div>
+                </div>
+                <div class="">
+                    <div class="flex flex-col gap-2">
+                        {#each order.content as PurchaseDetail[] as purchaseDetail}
+                            <div class="flex flex-row gap-1 bg-stone-700/20 rounded-sm place-content-between px-2">
+                                <span>
+                                    {purchaseDetail.product.product.name}                    
+                                </span>
+                                <span>
+                                    {purchaseDetail.amount}
+                                </span>
+                            </div>
+                        {/each}
+                    </div>
+                </div>
+                <span class="place-self-center">
+                    {order.createdAt.toLocaleDateString('es-EC', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
                 </span>
             </div>
         {/each}
     </section>
 </div>
+
+<form action="?/get_orders" method="post" use:enhance={() => {
+    return async ({ result }) => {
+        if (result.type === 'success') {
+            if (result.data?.orderPagination) {
+                setOrderPagination(result.data.orderPagination as OrderPagination);
+            }
+        }
+    }
+}}
+class="hidden"
+>
+    <button type="submit" bind:this={btnGetOrders}>
+        Get Orders
+    </button>
+</form>
 
 <Toast message={toastMessage} />
 

@@ -8,7 +8,8 @@ export async function createCatalog (name: string, description?: string) {
     const catalog: table.Catalog = {
         id: productId,
         name: name,
-        description: description ?? ''
+        description: description ?? '',
+        createdAt: new Date()
     }
 
     await db.insert(table.catalog).values(catalog).execute();

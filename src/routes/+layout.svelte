@@ -43,8 +43,10 @@
     }
 
 	$effect(() => {
+		btnCardSelectNav;
 		if (typeof btnCardSelectNav !== 'undefined') {
-			btnCardSelectNavHeight = btnCardSelectNav.clientHeight
+			btnCardSelectNavHeight = btnCardSelectNav.offsetHeight;
+			console.log(btnCardSelectNavHeight);
 		}
 	})
 
@@ -87,13 +89,14 @@
 			{/if}
 			<li class="flex flex-row gap-2 relative h-full">
 				<button bind:this={btnCardSelectNav} class="px-1 hover:text-red-400 focus:text-red-400 h-full w-full"
+				style="height: 41px;"
 				onclick={() => toggleCardSelectNavMenuIsVisible()}
 				onfocus={(e) => cancelFocus(e)}
 				>
 					<Icon icon="bxs:credit-card" class="text-3xl" />
 				</button>
 				{#if cardSelectNavMenuIsVisible}                        
-				<div transition:scale class="absolute flex flex-col rounded-b-md border bg-stone-900/95 place-self-center z-10"
+				<div transition:scale class="absolute flex flex-col z-30 rounded-b-md border bg-stone-900/95 place-self-center"
 				style="top: {btnCardSelectNavHeight}px;"
 				>
 					<a href="/admin/balance" class="hover:bg-stone-800 focus:bg-stone-800 px-2 py-1 w-full" 

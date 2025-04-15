@@ -17,6 +17,23 @@ export const load: PageServerLoad = async (event) => {
 };
 
 export const actions: Actions = {
+    set_view_state: async (event) => {
+        const formData = await event.request.formData();
+        const viewState = formData.get('view_state') as string;
+
+        if (!viewState) { return fail(400, { message: 'Error en los parámetros de la petición' }) }
+
+        event.cookies.set('order_view_state', viewState, {
+            path: '/'
+        })
+
+        const completed = viewState ? (viewState === 'completed' ? true : false) : false;  
+        const orderPagination = await getOrders(undefined, undefined, completed);
+
+        return {
+            orderPagination
+        }
+    },
     delete_order: async (event) => {
         const formData = await event.request.formData();
         const orderId = formData.get('order_id') as string;
@@ -53,5 +70,79 @@ export const actions: Actions = {
             completedOrders
         }
 
-    }
+    },
+    prev_page: async (event) => {
+        const formData = await event.request.formData();
+        let totalPages = 0;
+        let currentPage = 0;
+        
+        try {
+            totalPages = parseInt(formData.get('total_pages') as string);
+            currentPage = parseInt(formData.get('current_page') as string);
+            if (isNaN(totalPages) || isNaN(currentPage)) {
+                return fail(400, { message: 'Invalid pagination params' })
+            }
+        } catch {
+            return fail(400, { message: 'Invalid pagination params' })
+        }
+
+
+        
+        if (currentPage <= 1) {
+            return fail(404, { message: 'Page not found' })
+        }
+        const nextPage = currentPage - 1;
+        const orderPagination = await getOrders(nextPage);
+
+        return {
+            orderPagination
+        }
+    },
+    next_page: async (event) => {
+        const formData = await event.request.formData();
+        let totalPages = 0;
+        let currentPage = 0;
+        
+        try {
+            totalPages = parseInt(formData.get('total_pages') as string);
+            currentPage = parseInt(formData.get('current_page') as string);
+            if (isNaN(totalPages) || isNaN(currentPage)) {
+                return fail(400, { message: 'Invalid pagination params' })
+            }
+        } catch {
+            return fail(400, { message: 'Invalid pagination params' })
+        }
+
+
+        
+        if (currentPage >= totalPages) {
+            return fail(404, { message: 'Page not found' })
+        }
+        const nextPage = currentPage + 1;
+        const orderPagination = await getOrders(nextPage);
+
+        return {
+            orderPagination
+        }
+    },
+    goto_page: async (event) => {
+        const formData = await event.request.formData();
+        let gotoPage = 0;
+        const completed = event.locals.orderViewState ? (event.locals.orderViewState === 'completed' ? true : false) : false;
+
+        try {
+            gotoPage = parseInt(formData.get('goto_page') as string);
+            if (isNaN(gotoPage)) {
+                return fail(400, { message: 'Invalid pagination params' })
+            }
+        } catch {
+            return fail(400, { message: 'Invalid pagination params' })
+        }
+
+        const orderPagination = await getOrders(gotoPage, undefined, completed);
+
+        return {
+            orderPagination
+        }
+    },
 };

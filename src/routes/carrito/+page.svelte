@@ -6,6 +6,7 @@
 	import type { PurchaseDetail } from "$lib/interfaces/cart";
 	import { enhance } from "$app/forms";
 	import ClearCartModal from "$lib/components/modals/carrito/ClearCartModal.svelte";
+	import SendCartModal from "$lib/components/modals/carrito/SendCartModal.svelte";
 
     let { data }: PageProps = $props();
 
@@ -16,6 +17,7 @@
 
     // Visible Elements
     let clearCartModalIsVisible = $state(false);
+    let sendCartModalIsVisible = $state(false);
 
     // Toggle Visible Elements
     function toggleClearCartModalIsVisible (visible?: boolean) {
@@ -23,6 +25,13 @@
             clearCartModalIsVisible = !clearCartModalIsVisible;
         } else {
             clearCartModalIsVisible = visible;
+        }
+    }
+    function toggleSendCartModalIsVisible (visible?: boolean) {
+        if (typeof visible === 'undefined') {
+            sendCartModalIsVisible = !sendCartModalIsVisible;
+        } else {
+            sendCartModalIsVisible = visible;
         }
     }
 
@@ -78,12 +87,13 @@
 </script>
 
 <div in:fade>
-    <section class="sticky -top-1 z-30 flex flex-col bg-stone-900/95 backdrop-blur-lg gap-3 p-3">
+    <section class="sticky -top-1 z-20 flex flex-col bg-stone-900/95 backdrop-blur-lg gap-3 p-3">
         <div class="flex flex-col place-items-center text-xl">
             Carrito de compras
         </div>
         <div class="flex flex-wrap gap-3 place-content-center">
             <button class="flex flex-row gap-1 border py-2 px-2 rounded-full place-items-center hover:text-red-500 focus:text-red-500"
+        onclick={() => {if (cart.length > 0) {toggleSendCartModalIsVisible(true)}}}
             onfocus={(e) => cancelFocus(e)}
             >
                 <Icon icon="bi:cart-check-fill" class="text-2xl" />
@@ -155,3 +165,4 @@ class="hidden"
 </form>
 
 <ClearCartModal {toggleClearCartModalIsVisible} {resetCart} {clearCartModalIsVisible} />
+<SendCartModal {toggleSendCartModalIsVisible} {cart} {sendCartModalIsVisible} {resetCart} />

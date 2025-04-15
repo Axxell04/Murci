@@ -11,7 +11,8 @@ export async function createProduct(name: string, price: number, imgs: FileList,
     const product: table.Product = {
         id: productId,
         name: name,
-        price: price
+        price: price,
+        createdAt: new Date()
     }
     
     await db.insert(table.product).values(product).execute();

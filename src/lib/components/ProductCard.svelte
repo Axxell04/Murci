@@ -43,7 +43,7 @@
 
 </script>
 
-<div class="w-72 h-fit flex flex-col relative border border-red-400 rounded hover:border-red-500 cursor-pointer"
+<div class="w-72 h-fit flex flex-col relative bg-stone-800 rounded-md cursor-pointer card"
     onclick={()=>selectThisProduct(product)}
     role="button"
     tabindex="0"
@@ -57,7 +57,7 @@
             {product.product.name ?? 'Camisa'}
         </p>
         <p class="font-light text-red-300">
-            {`${product.product.price ?? 9.99} $`}
+            {`${product.product.price.toFixed(2)} $`}
         </p>
     </div>
     {#if isSelected && actualRoute?.includes('/admin')}        
@@ -77,3 +77,9 @@
     </div>
     {/if}
 </div>
+
+<style>
+    .card:hover {
+        box-shadow: oklch(70.4% 0.191 22.216)  0px 0px 5px;
+    }
+</style>

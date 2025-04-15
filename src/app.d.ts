@@ -9,7 +9,8 @@ declare global {
 			user: import('$lib/server/auth').SessionValidationResult['user'];
 			session: import('$lib/server/auth').SessionValidationResult['session'];
 			catalogId: string | undefined;
-			cart: PurchaseDetail[]
+			cart: PurchaseDetail[];
+			orderViewState: string | undefined;
 		}
 	}
 }

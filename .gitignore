@@ -2,10 +2,10 @@ node_modules
 
 # /scripts
 # Ignorar todos los archivos dentro del directorio imgs
-static/imgs/*
+uploads/imgs/*
 
 # No ignorar el directorio imgs (permitir que Git lo rastree)
-!static/imgs/
+!uploads/imgs/
 
 
 # Output

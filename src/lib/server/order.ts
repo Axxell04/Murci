@@ -8,7 +8,8 @@ export async function createOrder (content: object, contact: string) {
     const order: table.Order = {
         id: orderId,
         content,
-        contact
+        contact,
+        createdAt: new Date(),
     }
 
     await db.insert(table.order).values(order).execute();
