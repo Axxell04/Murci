@@ -65,19 +65,22 @@ export const order = sqliteTable('order', {
 export const revenue = sqliteTable('revenue', {
     id: text('id').primaryKey(),
     value: real('value').notNull(),
-    reason: text('reason')
+    reason: text('reason'),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull()
 })
 
 export const cost = sqliteTable('cost', {
     id: text('id').primaryKey(),
     value: real('value').notNull(),
-    reason: text('reason')
+    reason: text('reason'),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull()
 })
 
 export const expense = sqliteTable('expense', {
     id: text('id').primaryKey(),
     value: real('value').notNull(),
-    reason: text('reason')
+    reason: text('reason'),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull()
 })
 
 // CONTACTO
