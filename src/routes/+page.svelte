@@ -146,8 +146,6 @@
         }
     })
 
-    $inspect(cart);
-
 </script>
 
 <div in:fade class="flex flex-col gap-2 max-w-full max-h-full">

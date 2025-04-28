@@ -33,8 +33,14 @@ export async function getOrders (page: number = 1, limit: number = 10, completed
     };
 }
 
-export async function updateOrder (id: string, content: object, completed: boolean) {
-    await db.update(table.order).set({content, completed}).where(eq(table.order.id, id)).execute();
+export async function updateOrder (id: string, content?: object, completed?: boolean) {
+    if (typeof content !== 'undefined' && typeof completed !== 'undefined') {
+        await db.update(table.order).set({content, completed}).where(eq(table.order.id, id)).execute();
+    } else if (typeof content !== 'undefined') {
+        await db.update(table.order).set({content}).where(eq(table.order.id, id)).execute();
+    } else if (typeof completed !== 'undefined') {
+        await db.update(table.order).set({completed}).where(eq(table.order.id, id)).execute();
+    }
 }
 
 export async function deleteOrder (id: string) {

@@ -17,6 +17,8 @@
 
     let contact = $state('');
 
+    let totalValue = $derived(cart.reduce((pv, cv) => pv + (cv.amount * cv.product.product.price), 0))
+
     function updateContact (e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value
@@ -60,6 +62,10 @@
         class="flex flex-col gap-2 py-3 px-4 border rounded-md bg-stone-900"
         >
             <input type="hidden" name="cart" value={JSON.stringify(cart)} />
+            <div class="flex flex-col place-items-center">
+                <label for="total_value">Valor total</label>
+                <span class="font-semibold">$ {totalValue}</span>
+            </div>
             <div class="flex flex-col gap-2 place-items-center">
                 <label for="contact">Contacto</label>
                 <input type="hidden" name="contact" id="contact" value={contact} autocomplete="off" />

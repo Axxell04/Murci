@@ -13,6 +13,7 @@
 	import Toast from "$lib/components/Toast.svelte";
 	import type { Order, OrderPagination } from "$lib/interfaces/order";
 	import type { PurchaseDetail } from "$lib/interfaces/cart";
+	import OrderCard from "$lib/components/OrderCard.svelte";
 
     let { data }: PageProps = $props();
 
@@ -38,7 +39,7 @@
     // Selected Elements
     let orderSelected: Order | undefined = $state();
 
-    function selectThisOrder (order: Order) {
+    function selectThisOrder (order: Order | undefined) {
         orderSelected = order;
     }
 
@@ -73,6 +74,16 @@
         orderPagination = newOrderPagination;
     }
 
+    function updateOrderPaginationContent (orderId: string, newContent: PurchaseDetail[]) {
+        orderPagination = {...orderPagination, orders: orderPagination.orders.map((order) => {
+            if (order.id === orderId) {
+                newContent = newContent.filter((pd) => pd.amount > 0);
+                return {...order, content: newContent}
+            }
+            return order
+        }).filter((order) => (order.content as PurchaseDetail[]).length > 0)}
+    }
+
     function createListPages (totalPages: number) {
         let list = []
         for (let index = 1; index <= totalPages; index++) {
@@ -90,12 +101,21 @@
             }, 200)
         }
     }
+
+    function refreshOrders () {
+        const newOrders = orderPagination.orders;
+        orderPagination.orders = [];
+        setTimeout(() => {
+            orderPagination.orders = newOrders;
+        }, 200)
+    }
  
     // Effects
 
     $effect(() => {
         orderPagination;
         scrollTo({behavior: 'smooth', top: 170})
+        orderSelected = undefined;
     });
 
     $effect(() => {
@@ -122,7 +142,7 @@
                         if (result.type === "success") {
                             if (result.data?.orderPagination) {
                                 setOrderPagination(result.data.orderPagination as OrderPagination);
-                                console.log(result.data.orderPagination);
+                                refreshOrders();
                             }
                         }
                     }
@@ -248,43 +268,13 @@
 		</div>
 	</section>
     <section class="flex flex-wrap justify-center p-2 gap-3">
-        {#each orders as order}
-            <div class="flex flex-col gap-2 p-2 rounded-md bg-stone-800 self-start"
-            style="box-shadow: oklch(70.4% 0.191 22.216)  0px 0px 5px;"
-            >
-                <div class="flex flex-row gap-2 place-items-center place-content-between">
-                    <div class="flex flex-row place-content-between gap-2 px-1 text-xl place-items-center">
-                        <Icon icon="akar-icons:shopping-bag" class="text-3xl"/>
-                        <span class="translate-y-1">
-                            {(order.content as PurchaseDetail[]).length}
-                        </span>
-                    </div>
-                    <div class="flex flex-row gap-2 text-xl place-items-center">
-                        <Icon icon="ic:outline-whatsapp" class="text-3xl" />
-                        <span>
-                            {order.contact}
-                        </span>
-                    </div>
-                </div>
-                <div class="">
-                    <div class="flex flex-col gap-2">
-                        {#each order.content as PurchaseDetail[] as purchaseDetail}
-                            <div class="flex flex-row gap-1 bg-stone-700/20 rounded-sm place-content-between px-2">
-                                <span>
-                                    {purchaseDetail.product.product.name}                    
-                                </span>
-                                <span>
-                                    {purchaseDetail.amount}
-                                </span>
-                            </div>
-                        {/each}
-                    </div>
-                </div>
-                <span class="place-self-center">
-                    {order.createdAt.toLocaleDateString('es-EC', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                </span>
+        <!-- {#key Date.now()} -->
+        {#each orders as order (order.id)}
+            <div transition:scale={{delay: 100 * (orders.indexOf(order) + 1), duration: 200}}>
+                <OrderCard {order} {selectThisOrder} {orderSelected} {setOrderPagination} {updateOrderPaginationContent} />
             </div>
         {/each}
+        <!-- {/key} -->
     </section>
 </div>
 

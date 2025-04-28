@@ -5,9 +5,9 @@ import { validateCatalog } from '$lib/server/catalog';
 const handleAuth: Handle = async ({ event, resolve }) => {
 	const orderViewState = event.cookies.get('order_view_state');
 	if (orderViewState) {
-		event.locals.orderViewState = 'pending';
-	} else {
 		event.locals.orderViewState = orderViewState;
+	} else {
+		event.locals.orderViewState = 'pending';
 	}
 
 	const catalogId = event.cookies.get('catalog-id');

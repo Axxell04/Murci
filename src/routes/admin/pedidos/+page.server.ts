@@ -46,30 +46,50 @@ export const actions: Actions = {
             console.log(error);
             return fail(500, { message: 'A ocurrido un error en el servidor' })
         }
+
+        const completed = event.locals.orderViewState ? (event.locals.orderViewState === 'completed' ? true : false) : false;
+        const orderPagination = await getOrders(undefined, undefined, completed);
+
+        return {
+            orderPagination
+        }
     },
     edit_order: async (event) => {
         const formData = await event.request.formData();
         const orderId = formData.get('order_id') as string;
         let content: object;
-        let completed: boolean;
         try {
             content = JSON.parse(formData.get('content') as string);
-            completed = JSON.parse(formData.get('completed') as string);
-            if (!content || !completed || !orderId) { return fail(400, { message: 'Error en los parámetros de la petición' }) }
+            if (!content || !orderId) { return fail(400, { message: 'Error en los parámetros de la petición' }) }
         } catch {
             return fail(400, { message: 'Error en los parámetros de la petición' })
         }
 
-        await updateOrder(orderId, content, completed);
+        await updateOrder(orderId, content);
 
-        const pendingOrders = await getOrders(undefined, undefined, false);
-        const completedOrders = await getOrders(undefined, undefined, true);
+        const completed = event.locals.orderViewState ? (event.locals.orderViewState === 'completed' ? true : false) : false;
+
+        const orderPagination = await getOrders(undefined, undefined, completed)
 
         return {
-            pendingOrders,
-            completedOrders
+            orderPagination
         }
 
+    },
+    update_order_state: async (event) => {
+        const formData = await event.request.formData();
+        const orderId = formData.get('order_id') as string;
+
+        const completed = event.locals.orderViewState ? (event.locals.orderViewState === 'completed' ? true : false) : false;
+
+        await updateOrder(orderId, undefined, !completed);
+        
+        const orderPagination = await getOrders(undefined, undefined, completed);
+
+        return {
+            orderPagination
+        }
+        
     },
     prev_page: async (event) => {
         const formData = await event.request.formData();
