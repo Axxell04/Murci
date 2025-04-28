@@ -61,6 +61,25 @@ export const order = sqliteTable('order', {
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`CURRENT_TIMESTAMP`)
 })
 
+// BALANCE
+export const revenue = sqliteTable('revenue', {
+    id: text('id').primaryKey(),
+    value: real('value').notNull(),
+    reason: text('reason')
+})
+
+export const cost = sqliteTable('cost', {
+    id: text('id').primaryKey(),
+    value: real('value').notNull(),
+    reason: text('reason')
+})
+
+export const expense = sqliteTable('expense', {
+    id: text('id').primaryKey(),
+    value: real('value').notNull(),
+    reason: text('reason')
+})
+
 // CONTACTO
 export const contact = sqliteTable('contact', {
     id: text('id').primaryKey(),
@@ -86,3 +105,9 @@ export const Contact = contact.$inferInsert;
 export const UserToken = user_token.$inferInsert;
 
 export const Order = order.$inferInsert;
+
+export const Revenue = revenue.$inferInsert;
+
+export const Cost = cost.$inferInsert;
+
+export const Expense = expense.$inferInsert;
