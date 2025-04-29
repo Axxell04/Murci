@@ -10,6 +10,13 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 		event.locals.orderViewState = 'pending';
 	}
 
+	const balanceViewState = event.cookies.get('balance_view_state');
+	if (balanceViewState) {
+		event.locals.balanceViewSatate = balanceViewState;
+	} else {
+		event.locals.balanceViewSatate = 'resume'
+	}
+
 	const catalogId = event.cookies.get('catalog-id');
 	if (catalogId) {
 		const valid = await validateCatalog(catalogId);

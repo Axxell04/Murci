@@ -42,3 +42,9 @@ export async function updateRevenue (id: string, value?: number, reason?: string
 export async function deleteRevenue (id: string) {
     await db.delete(table.revenue).where(eq(table.revenue.id, id));
 }
+
+export async function getTotalRevenue () {
+    const revenues = await db.select().from(table.revenue).execute();
+    const total = revenues.reduce((pv, cv) => pv + cv.value, 0);
+    return total;
+}

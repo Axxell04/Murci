@@ -42,3 +42,9 @@ export async function updateExpense (id: string, value?: number, reason?: string
 export async function deleteExpense (id: string) {
     await db.delete(table.expense).where(eq(table.expense.id, id));
 }
+
+export async function getTotalExpense () {
+    const expenses = await db.select().from(table.expense).execute();
+    const total = expenses.reduce((pv, cv) => pv + cv.value, 0);
+    return total;
+}

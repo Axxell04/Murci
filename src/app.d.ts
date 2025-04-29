@@ -11,6 +11,7 @@ declare global {
 			catalogId: string | undefined;
 			cart: PurchaseDetail[];
 			orderViewState: string | undefined;
+			balanceViewSatate: string | undefined;
 		}
 	}
 }
