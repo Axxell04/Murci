@@ -4,6 +4,7 @@
 	import type { PageProps } from "./$types";
 	import type { BalanceDetail, BalanceDetailPagination } from "$lib/interfaces/balance";
 	import Icon from "@iconify/svelte";
+	import BalanceDetailCard from "$lib/components/BalanceDetailCard.svelte";
 
     let { data }: PageProps = $props()
     let totalRevenue = $state(data.totalRevenue);
@@ -15,6 +16,8 @@
     let balanceDetailPagination: BalanceDetailPagination | undefined = $state();
     let balanceDetails: BalanceDetail[] | undefined = $derived(balanceDetailPagination?.balanceDetails)
 
+    let balanceDetailSelected: BalanceDetail | undefined = $state();
+
     let gotoPage: number | undefined = $state();
 
     // View State
@@ -22,12 +25,14 @@
 
     // HTML Elements
     let selectStateElement: HTMLButtonElement | undefined = $state();
+    let btnRefreshTotals: HTMLButtonElement | undefined = $state();
 
     let selectStateElementHeight: number = $state(9);
 
     // Visible Elements
     let gotoPageListIsVisible = $state(false);
     let stateListIsVisible = $state(false);
+    let addPanelIsVisible = $state(false);
 
     // Toggle Visible Elements
     function toggleGotoPageListIsVisible (visible?: boolean) {
@@ -46,6 +51,14 @@
         }
     }
 
+    function toggleAddPanelIsVisible (visible?: boolean) {
+        if (typeof visible !== "undefined") {
+            addPanelIsVisible = visible;
+        } else {
+            addPanelIsVisible = !addPanelIsVisible;
+        }
+    }
+
     // Setter Functions
     function setBalanceDetailPagination (newBalanceDetailPagination: BalanceDetailPagination | undefined) {
         balanceDetailPagination = newBalanceDetailPagination;
@@ -59,6 +72,17 @@
             if (typeof balanceDetailPagination === 'undefined') { return }
             balanceDetailPagination.balanceDetails = newBalanceDetails;
         }, 200)
+    }
+
+    function selectThisBalanceDetail (balanceDetail: BalanceDetail | undefined) {
+        balanceDetailSelected = balanceDetail;
+    }
+
+    // Request Functions
+    function refreshTotals () {
+        if (typeof btnRefreshTotals !== 'undefined' && viewState === 'resume') {
+            btnRefreshTotals.click()
+        }
     }
 
     function createListPages (totalPages: number) {
@@ -82,6 +106,12 @@
     $effect(() => {
         if (typeof selectStateElement !== 'undefined' && stateListIsVisible) {
             selectStateElementHeight = selectStateElement.clientHeight;
+        }
+    })
+
+    $effect(() => {
+        if (viewState === 'resume') {
+            refreshTotals()
         }
     })
 
@@ -243,17 +273,67 @@
     <section class="flex flex-wrap justify-center p-2 gap-3">
         <!-- {#key Date.now()} -->
         {#if typeof balanceDetails !== 'undefined'}
+        <div class="flex flex-col gap-2">
+            {#if !addPanelIsVisible}
+            <button in:scale class="flex flex-row gap-1 border p-1 rounded-md hover:text-red-500 focus:text-red-500 place-items-center"
+            onfocus={(e) => cancelFocus(e)}
+            onclick={() => toggleAddPanelIsVisible(true)}
+            >
+                <Icon icon="material-symbols:add-rounded" class="text-2xl" />
+                <span style="font-family: Nunito;">
+                    Añadir
+                </span>
+            </button>
+            {:else}
+            <form action="?/add_balance" method="post" use:enhance={() => {
+                return async ({ result, formElement }) => {
+                    if (result.type === 'success') {
+                        if (result.data?.balanceDetailPagination) {
+                            setBalanceDetailPagination(result.data.balanceDetailPagination as BalanceDetailPagination);
+                            refreshBalanceDetails();
+                            formElement.reset();
+                            toggleAddPanelIsVisible(false);
+                        }
+                    }
+                }
+            }}
+            class="flex flex-col gap-2 bg-stone-700/20 p-2 rounded-xl"
+            >
+            <div in:scale class="flex flex-row gap-2 rounded-full">
+                <button type="button" class="focus:text-red-500 rounded-full px-1 grow"
+                onfocus={(e) => cancelFocus(e)}
+                onclick={() => toggleAddPanelIsVisible(false)}
+                >
+                    Cancelar
+                </button>
+                <button class="bg-red-400 text-stone-900 focus:bg-red-500 rounded-lg px-1 grow"
+                onfocus={(e) => cancelFocus(e)}
+                >
+                    Confirmar
+                </button>
+            </div>
+            <div class="flex flex-col gap-2 place-items-center text-center">
+                <div class="flex flex-col">
+                    <span>
+                        Motivo
+                    </span>
+                    <input type="text" name="reason" id="reason" class="bg-transparent text-red-400 border rounded-md outline-none px-1" required autocomplete="off">
+                </div>
+                <div class="flex flex-col">
+                    <span>
+                        Valor
+                    </span>
+                    <input type="number" step="0.01" name="value" id="value" class="bg-transparent text-red-400 border rounded-md outline-none px-1" required autocomplete="off">
+                </div>
+            </div>
+            </form>
+
+            {/if}
+        </div>
         {#each balanceDetails as balanceDetail (balanceDetail.id)}
             <div transition:scale={{delay: 100 * (balanceDetails.indexOf(balanceDetail) + 1), duration: 200}}>
                 <!-- <OrderCard {order} {selectThisOrder} {orderSelected} {setOrderPagination} {updateOrderPaginationContent} /> -->
-                <div class="flex flex-col gap-1 p-1">
-                    <span>
-                        {balanceDetail.reason ?? ''}
-                    </span>
-                    <span>
-                        $ {balanceDetail.value.toFixed(2)}
-                    </span>
-                </div>
+                <BalanceDetailCard {balanceDetail} {selectThisBalanceDetail} {balanceDetailSelected} {setBalanceDetailPagination} />
             </div>
         {/each}
         {/if}
@@ -287,6 +367,22 @@
         {/if}
     </section>
 </div>
+
+<form action="?/refresh_totals" method="post" use:enhance={() => {
+    return async ({ result }) => {
+        if (result.type === 'success') {
+            if (typeof result.data !== 'undefined' && 'totalRevenue' in result.data && 'totalCost' in result.data && 'totalExpense' in result.data) {
+                totalRevenue = result.data.totalRevenue as number;
+                totalCost = result.data.totalCost as number;
+                totalExpense = result.data.totalExpense as number;
+            }
+        }
+    }
+}}>
+    <button bind:this={btnRefreshTotals} type="submit" class="hidden">
+        Refresh Totals
+    </button>
+</form>
 
 <style>
     .card:hover {
