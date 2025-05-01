@@ -33,10 +33,22 @@ export async function getOrders (page: number = 1, limit: number = 10, completed
     };
 }
 
-export async function updateOrder (id: string, content?: object, completed?: boolean) {
-    if (typeof content !== 'undefined' && typeof completed !== 'undefined') {
+export async function updateOrder (id: string, content?: object, completed?: boolean, revenueId?: string | null, totalValue?: number | undefined) {
+    if (typeof completed !== 'undefined' && typeof revenueId === 'string') {
+        await db.update(table.order).set({completed, revenueId}).where(eq(table.order.id, id)).execute();
+    } else if (typeof completed !== 'undefined' && revenueId === null) {
+        const [order] = await db.select().from(table.order).where(eq(table.order.id, id));
+        await db.update(table.order).set({completed, revenueId}).where(eq(table.order.id, id)).execute();
+        if (order.revenueId) {
+            await db.delete(table.revenue).where(eq(table.revenue.id, order.revenueId));
+        }
+    } else if (typeof content !== 'undefined' && typeof completed !== 'undefined') {
         await db.update(table.order).set({content, completed}).where(eq(table.order.id, id)).execute();
-    } else if (typeof content !== 'undefined') {
+    } else if (typeof content !== 'undefined' && typeof totalValue !== 'undefined') {
+        const [order] = await db.select().from(table.order).where(eq(table.order.id, id)).execute();
+        if (order.revenueId) {
+            await db.update(table.revenue).set({value: totalValue}).where(eq(table.revenue.id, order.revenueId)).execute();
+        }
         await db.update(table.order).set({content}).where(eq(table.order.id, id)).execute();
     } else if (typeof completed !== 'undefined') {
         await db.update(table.order).set({completed}).where(eq(table.order.id, id)).execute();
@@ -44,5 +56,9 @@ export async function updateOrder (id: string, content?: object, completed?: boo
 }
 
 export async function deleteOrder (id: string) {
+    const [order] = await db.select().from(table.order).where(eq(table.order.id, id)).execute();
+    if (order.revenueId) {
+        await db.delete(table.revenue).where(eq(table.order.revenueId, order.revenueId));
+    }
     await db.delete(table.order).where(eq(table.order.id, id));
 }

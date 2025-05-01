@@ -214,6 +214,7 @@ role="button"
     }}
     class="flex flex-col gap-2"
     >
+        <input type="hidden" name="total_value" id="total_value" value={totalValue.toFixed(2)}>
         <div class="flex flex-row gap-2 place-content-around text-3xl bg-stone-700/20 rounded-full">
             <input type="hidden" name="order_id" value={order.id}>
             <button type="button" class="focus:text-red-500 rounded-full px-1 {confirmationDeleteIsVisible ? 'bg-red-400 text-stone-800/90' : ''}"

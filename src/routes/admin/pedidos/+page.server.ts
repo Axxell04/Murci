@@ -1,6 +1,7 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { deleteOrder, getOrders, updateOrder } from "$lib/server/order";
+import { createRevenue } from "$lib/server/revenue";
 
 export const load: PageServerLoad = async (event) => {
     if (!event.locals.user) {
@@ -57,15 +58,16 @@ export const actions: Actions = {
     edit_order: async (event) => {
         const formData = await event.request.formData();
         const orderId = formData.get('order_id') as string;
+        const totalValue = parseFloat(formData.get('total_value') as string);
         let content: object;
         try {
             content = JSON.parse(formData.get('content') as string);
-            if (!content || !orderId) { return fail(400, { message: 'Error en los parámetros de la petición' }) }
+            if (!content || !orderId || !isNumber(totalValue)) { return fail(400, { message: 'Error en los parámetros de la petición' }) }
         } catch {
             return fail(400, { message: 'Error en los parámetros de la petición' })
         }
 
-        await updateOrder(orderId, content);
+        await updateOrder(orderId, content, undefined, undefined, totalValue);
 
         const completed = event.locals.orderViewState ? (event.locals.orderViewState === 'completed' ? true : false) : false;
 
@@ -79,10 +81,25 @@ export const actions: Actions = {
     update_order_state: async (event) => {
         const formData = await event.request.formData();
         const orderId = formData.get('order_id') as string;
+        const totalValue = parseFloat(formData.get('total_value') as string);
+
+        if (!orderId || !isNumber(totalValue)) {
+            return fail(400, { message: 'Error en los parámetros de la petición' })
+        }
 
         const completed = event.locals.orderViewState ? (event.locals.orderViewState === 'completed' ? true : false) : false;
 
-        await updateOrder(orderId, undefined, !completed);
+        try {
+            if (!completed === true) {
+                const revenueId = await createRevenue(parseFloat(totalValue.toFixed(2)), 'Orden completada');
+                await updateOrder(orderId, undefined, !completed, revenueId);
+            } else {
+                await updateOrder(orderId, undefined, !completed, null);
+            }
+            
+        } catch {
+            return fail(500, { message: 'A ocurrido un error en el servidor' })
+        }
         
         const orderPagination = await getOrders(undefined, undefined, completed);
 
@@ -166,3 +183,7 @@ export const actions: Actions = {
         }
     },
 };
+
+function isNumber (value: unknown): value is number {
+    return typeof value === 'number' && !isNaN(value) && value > 0 
+}

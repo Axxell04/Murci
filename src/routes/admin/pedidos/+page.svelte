@@ -33,6 +33,7 @@
     // HTML Elements
     let selectStateElement: HTMLButtonElement | undefined = $state();
     let btnGetOrders: HTMLButtonElement | undefined = $state();
+    let btnSetInitViewState: HTMLButtonElement | undefined = $state();
 
     let selectStateElementHeight: number = $state(9);
 
@@ -131,6 +132,12 @@
         }
     });
 
+    onMount(() => {
+        if (typeof btnSetInitViewState !== 'undefined') {
+            btnSetInitViewState.click();
+        }
+    })
+
 </script>
 
 <div in:fade class="flex flex-col gap-2 max-w-full max-h-full">
@@ -178,6 +185,10 @@
                         </ul>
                     </div>
                     {/if}
+
+                    <button bind:this={btnSetInitViewState} type="submit" class="hidden" >
+                        Set Init View State
+                    </button>
                 </form>
                 <form action="?/prev_page" method="post" use:enhance={() => {
                     return async ({ result }) => {

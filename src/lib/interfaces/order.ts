@@ -4,6 +4,7 @@ export interface Order {
     completed: boolean
     contact: string
     createdAt: Date
+    revenueId?: string | null
 }
 
 export interface OrderPagination {

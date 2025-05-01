@@ -58,7 +58,8 @@ export const order = sqliteTable('order', {
 	content: text('content', { mode: 'json' }).notNull(),
 	completed: integer('completed', { mode: 'boolean' }).notNull().default(false),
 	contact: text('contact').notNull(),
-	createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`CURRENT_TIMESTAMP`)
+	createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`CURRENT_TIMESTAMP`),
+	revenueId: text('revenue_id').references(() => revenue.id)
 })
 
 // BALANCE
