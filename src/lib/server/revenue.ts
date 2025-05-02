@@ -1,7 +1,7 @@
 import * as table from '$lib/server/db/schema';
 import { db } from '$lib/server/db';
 import { generateId } from './functions';
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 
 export async function createRevenue (value: number, reason?: string) {
     const revenueId = generateId();
@@ -17,9 +17,9 @@ export async function createRevenue (value: number, reason?: string) {
     return revenueId;
 }
 
-export async function getRevenues (page: number = 1, limit: number = 10) {
+export async function getRevenues (page: number = 1, limit: number = 5) {
     const offset = (page - 1) * limit;
-    const revenues = await db.select().from(table.revenue).limit(limit).offset(offset).orderBy(table.revenue.createdAt).execute()
+    const revenues = await db.select().from(table.revenue).limit(limit).offset(offset).orderBy(desc(table.revenue.createdAt)).execute()
     
     const totalOrders = (await db.select().from(table.revenue).execute()).length 
     const totalPages = Math.ceil(totalOrders / limit);

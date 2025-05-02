@@ -10,6 +10,7 @@
     let totalRevenue = $state(data.totalRevenue);
     let totalCost = $state(data.totalCost);
     let totalExpense = $state(data.totalExpense);
+    let profits = $derived(totalRevenue - (totalCost + totalExpense));
 
     type ViewState = 'resume' | 'revenue' | 'cost' | 'expense';
 
@@ -114,6 +115,8 @@
             refreshTotals()
         }
     })
+
+    $inspect(balanceDetailPagination)
 
 </script>
 
@@ -270,9 +273,8 @@
             </div>
 		</div>
 	</section>
-    <section class="flex flex-wrap justify-center p-2 gap-3">
-        <!-- {#key Date.now()} -->
-        {#if typeof balanceDetails !== 'undefined'}
+    <section class="flex flex-col place-items-center">
+        {#if typeof balanceDetails !== 'undefined' && viewState !== 'resume'}
         <div class="flex flex-col gap-2">
             {#if !addPanelIsVisible}
             <button in:scale class="flex flex-row gap-1 border p-1 rounded-md hover:text-red-500 focus:text-red-500 place-items-center"
@@ -330,6 +332,21 @@
 
             {/if}
         </div>
+        {:else if viewState === 'resume'}
+        <div class="flex flex-row gap-3 place-items-center place-content-center text-center">
+            <span>
+                Ganancias:
+            </span>
+            <span class="font-semibold">
+                $ {profits.toFixed(2)}
+            </span>
+        </div>
+        {/if}
+    </section>
+    <section class="flex flex-wrap justify-center p-2 gap-3">
+        <!-- {#key Date.now()} -->
+        {#if typeof balanceDetails !== 'undefined' && viewState !== 'resume'}
+        
         {#each balanceDetails as balanceDetail (balanceDetail.id)}
             <div transition:scale={{delay: 100 * (balanceDetails.indexOf(balanceDetail) + 1), duration: 200}}>
                 <!-- <OrderCard {order} {selectThisOrder} {orderSelected} {setOrderPagination} {updateOrderPaginationContent} /> -->
@@ -339,7 +356,7 @@
         {/if}
         <!-- {/key} -->
         {#if viewState === 'resume'}
-        <div class="flex flex-col gap-4 p-2 rounded-md bg-stone-800 self-start place-items-center card">
+        <div transition:scale={{delay: 100, duration: 200}} class="flex flex-col gap-4 p-2 rounded-md bg-stone-800 self-start place-items-center card">
             <span>
                 Ingresos
             </span>
@@ -347,7 +364,7 @@
                 $ {totalRevenue.toFixed(2)}
             </span>
         </div>
-        <div class="flex flex-col gap-4 p-2 rounded-md bg-stone-800 self-start place-items-center card">
+        <div transition:scale={{delay: 200, duration: 200}} class="flex flex-col gap-4 p-2 rounded-md bg-stone-800 self-start place-items-center card">
             <span>
                 Costos
             </span>
@@ -355,7 +372,7 @@
                 $ {totalCost.toFixed(2)}
             </span>
         </div>
-        <div class="flex flex-col gap-4 p-2 rounded-md bg-stone-800 self-start place-items-center card">
+        <div transition:scale={{delay: 300, duration: 200}} class="flex flex-col gap-4 p-2 rounded-md bg-stone-800 self-start place-items-center card">
             <span>
                 Gastos
             </span>

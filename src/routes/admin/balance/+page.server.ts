@@ -3,7 +3,7 @@ import type { Actions, PageServerLoad } from "./$types";
 import { createRevenue, deleteRevenue, getRevenues, getTotalRevenue, updateRevenue } from "$lib/server/revenue";
 import { createCost, deleteCost, getCosts, getTotalCost, updateCost } from "$lib/server/cost";
 import { createExpense, deleteExpense, getExpenses, getTotalExpense, updateExpense } from "$lib/server/expense";
-import type { BalanceDetail, BalanceDetailPagination } from "$lib/interfaces/balance";
+import type { BalanceDetailPagination } from "$lib/interfaces/balance";
 
 export const load: PageServerLoad = async (event) => {
     if (!event.locals.user) {
@@ -70,30 +70,24 @@ export const actions: Actions = {
         }
 
         const viewState = event.locals.balanceViewSatate;
-        let balanceDetails: BalanceDetail[] | undefined;
+        let balanceDetailPagination: BalanceDetailPagination | undefined;
         try {
             if (viewState === 'revenue') {
                 await createRevenue(value, reason);
                 const res = await getRevenues()
-                balanceDetails = res.revenues;
+                balanceDetailPagination = {...res, balanceDetails: res.revenues};
             } else if (viewState === 'cost') {
                 await createCost(value, reason); 
                 const res = await getCosts();
-                balanceDetails = res.costs;
+                balanceDetailPagination = {...res, balanceDetails: res.costs};
             } else if (viewState === 'expense') {
                 await createExpense(value, reason);
                 const res = await getExpenses();
-                balanceDetails = res.expenses;
+                balanceDetailPagination = {...res, balanceDetails: res.expenses};
             } 
             
         } catch {
             return fail(500, { message: 'A ocurrido un error en el servidor' })
-        }
-
-        const balanceDetailPagination:BalanceDetailPagination = {
-            balanceDetails: balanceDetails ?? [],
-            totalPages: 1,
-            currentPage: 1
         }
 
         return {
@@ -109,31 +103,25 @@ export const actions: Actions = {
         }
 
         const viewState = event.locals.balanceViewSatate;
-        let balanceDetails: BalanceDetail[] | undefined;
+        let balanceDetailPagination: BalanceDetailPagination | undefined;
 
         try {
             if (viewState === 'revenue') {
                 await deleteRevenue(balanceId);
                 const res = await getRevenues()
-                balanceDetails = res.revenues;
+                balanceDetailPagination = {...res, balanceDetails: res.revenues};
             } else if (viewState === 'cost') {
                 await deleteCost(balanceId);
                 const res = await getCosts();
-                balanceDetails = res.costs;
+                balanceDetailPagination = {...res, balanceDetails: res.costs};
             } else if (viewState === 'expense') {
                 await deleteExpense(balanceId);
                 const res = await getExpenses();
-                balanceDetails = res.expenses;
+                balanceDetailPagination = {...res, balanceDetails: res.expenses};
             }
             
         } catch {
             return fail(500, { message: 'A ocurrido un error en el servidor' })
-        }
-
-        const balanceDetailPagination:BalanceDetailPagination = {
-            balanceDetails: balanceDetails ?? [],
-            totalPages: 1,
-            currentPage: 1
         }
 
         return {
@@ -151,31 +139,25 @@ export const actions: Actions = {
         }
 
         const viewState = event.locals.balanceViewSatate;
-        let balanceDetails: BalanceDetail[] | undefined;
+        let balanceDetailPagination: BalanceDetailPagination | undefined;
 
         try {
             if (viewState === 'revenue') {
                 await updateRevenue(balanceId, newValue, newReason);
                 const res = await getRevenues()
-                balanceDetails = res.revenues;
+                balanceDetailPagination = {...res, balanceDetails: res.revenues};
             } else if (viewState === 'cost') {
                 await updateCost(balanceId, newValue, newReason);
                 const res = await getCosts();
-                balanceDetails = res.costs;
+                balanceDetailPagination = {...res, balanceDetails: res.costs};
             } else if (viewState === 'expense') {
                 await updateExpense(balanceId, newValue, newReason);
                 const res = await getExpenses();
-                balanceDetails = res.expenses;
+                balanceDetailPagination = {...res, balanceDetails: res.expenses};
             }
             
         } catch {
             return fail(500, { message: 'A ocurrido un error en el servidor' })
-        }
-
-        const balanceDetailPagination:BalanceDetailPagination = {
-            balanceDetails: balanceDetails ?? [],
-            totalPages: 1,
-            currentPage: 1
         }
 
         return {
@@ -192,7 +174,119 @@ export const actions: Actions = {
             totalCost,
             totalExpense
         }
-    }
+    },
+    prev_page: async (event) => {
+        const formData = await event.request.formData();
+        let totalPages = 0;
+        let currentPage = 0;
+        
+        try {
+            totalPages = parseInt(formData.get('total_pages') as string);
+            currentPage = parseInt(formData.get('current_page') as string);
+            if (isNaN(totalPages) || isNaN(currentPage)) {
+                return fail(400, { message: 'Invalid pagination params' })
+            }
+        } catch {
+            return fail(400, { message: 'Invalid pagination params' })
+        }
+
+
+        
+        if (currentPage <= 1) {
+            return fail(404, { message: 'Page not found' })
+        }
+
+        const viewState = event.locals.balanceViewSatate;
+        const prevPage = currentPage - 1;
+
+        let balanceDetailPagination: BalanceDetailPagination | undefined;
+
+        if (viewState === 'revenue') {
+            const res = await getRevenues(prevPage);
+            balanceDetailPagination = {...res, balanceDetails: res.revenues};
+        } else if (viewState === 'cost') {
+            const res = await getCosts(prevPage);
+            balanceDetailPagination = {...res, balanceDetails: res.costs};
+        } else if (viewState === 'expense') {
+            const res = await getExpenses(prevPage);
+            balanceDetailPagination = {...res, balanceDetails: res.expenses};
+        }
+
+        return {
+            balanceDetailPagination
+        }
+    },
+    next_page: async (event) => {
+        const formData = await event.request.formData();
+        let totalPages = 0;
+        let currentPage = 0;
+        
+        try {
+            totalPages = parseInt(formData.get('total_pages') as string);
+            currentPage = parseInt(formData.get('current_page') as string);
+            if (isNaN(totalPages) || isNaN(currentPage)) {
+                return fail(400, { message: 'Invalid pagination params' })
+            }
+        } catch {
+            return fail(400, { message: 'Invalid pagination params' })
+        }
+
+        if (currentPage >= totalPages) {
+            return fail(404, { message: 'Page not found' })
+        }
+
+        const viewState = event.locals.balanceViewSatate;
+        const nextPage = currentPage + 1;
+
+        let balanceDetailPagination: BalanceDetailPagination | undefined;
+
+        if (viewState === 'revenue') {
+            const res = await getRevenues(nextPage);
+            balanceDetailPagination = {...res, balanceDetails: res.revenues};
+        } else if (viewState === 'cost') {
+            const res = await getCosts(nextPage);
+            balanceDetailPagination = {...res, balanceDetails: res.costs};
+        } else if (viewState === 'expense') {
+            const res = await getExpenses(nextPage);
+            balanceDetailPagination = {...res, balanceDetails: res.expenses};
+        }
+
+        return {
+            balanceDetailPagination
+        }
+    },
+    goto_page: async (event) => {
+        const formData = await event.request.formData();
+        let gotoPage = 0;
+
+        try {
+            gotoPage = parseInt(formData.get('goto_page') as string);
+            if (isNaN(gotoPage)) {
+                return fail(400, { message: 'Invalid pagination params' })
+            }
+        } catch {
+            return fail(400, { message: 'Invalid pagination params' })
+        }
+
+        const viewState = event.locals.balanceViewSatate;
+
+        let balanceDetailPagination: BalanceDetailPagination | undefined;
+
+        if (viewState === 'revenue') {
+            const res = await getRevenues(gotoPage);
+            balanceDetailPagination = {...res, balanceDetails: res.revenues};
+        } else if (viewState === 'cost') {
+            const res = await getCosts(gotoPage);
+            balanceDetailPagination = {...res, balanceDetails: res.costs};
+        } else if (viewState === 'expense') {
+            const res = await getExpenses(gotoPage);
+            balanceDetailPagination = {...res, balanceDetails: res.expenses};
+        }
+
+        return {
+            balanceDetailPagination
+        }
+    },
 };
 
 function isNumber (value: unknown): value is number {
