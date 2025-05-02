@@ -131,11 +131,11 @@ role="button"
             </span>
             {/if}
         </div>
-        <button bind:this={btnDeleteBalanceDetail} type="submit" formaction="?/delete_balance" class="hidden">
-            Delete Balance Detail
-        </button>
         <button bind:this={btnEditBalanceDetail} type="submit" formaction="?/edit_balance" class="hidden">
             Edit Balance Detail
+        </button>
+        <button bind:this={btnDeleteBalanceDetail} type="submit" formaction="?/delete_balance" class="hidden">
+            Delete Balance Detail
         </button>
     </form>
     <span class="place-self-center">
