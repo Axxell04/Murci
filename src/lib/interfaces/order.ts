@@ -2,7 +2,7 @@ export interface Order {
     id: string
     content: unknown
     completed: boolean
-    contact: string
+    clientName: string
     createdAt: Date
     revenueId?: string | null
 }

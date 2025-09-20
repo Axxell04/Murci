@@ -23,13 +23,13 @@ export const actions: Actions = {
     },
     send_cart: async (event) => {
         const formData = await event.request.formData();
-        const contact = formData.get('contact') as string;
+        const clientName = formData.get('client-name') as string;
         let cart: object;
 
         try {
             cart = JSON.parse(formData.get('cart') as string);
-            if (!contact || !isPurchaseDetail(cart)) { return fail(400, { message: 'Error en los parámetros de la petición' }) }
-            await createOrder(cart, contact);
+            if (!clientName || !isPurchaseDetail(cart)) { return fail(400, { message: 'Error en los parámetros de la petición' }) }
+            await createOrder(cart, clientName);
             
         } catch {
             return fail(500, { message: 'A ocurrido un error en el servidor' })            

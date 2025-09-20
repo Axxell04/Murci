@@ -155,9 +155,9 @@ role="button"
             </span>
         </div>
         <div class="flex flex-row gap-2 text-xl place-items-center">
-            <Icon icon="ic:outline-whatsapp" class="text-3xl" />
+            <Icon icon="solar:user-linear" class="text-3xl" />
             <span>
-                {order.contact}
+                {order.clientName}
             </span>
         </div>
     </div>

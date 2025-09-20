@@ -15,14 +15,14 @@
 
     let formMessage = $state('');
 
-    let contact = $state('');
+    let clientName = $state('');
 
     let totalValue = $derived(cart.reduce((pv, cv) => pv + (cv.amount * cv.product.product.price), 0))
 
-    function updateContact (e: Event) {
+    function updateClientName (e: Event) {
         const target = e.target as HTMLInputElement;
         const value = target.value
-        contact = value;
+        clientName = value;
     }
 
     function cancelFocus (e: FocusEvent) {
@@ -67,11 +67,15 @@
                 <span class="font-semibold">$ {totalValue}</span>
             </div>
             <div class="flex flex-col gap-2 place-items-center">
-                <label for="contact">Contacto</label>
-                <input type="hidden" name="contact" id="contact" value={contact} autocomplete="off" />
-                <input type="number" name="contact-mask" id="contact-mask" required autocomplete="off"
+                <label for="contact">Nombre de cliente</label>
+                <!-- <input type="hidden" name="contact" id="contact" value={clientName} autocomplete="off" /> -->
+                <!-- <input type="number" name="contact-mask" id="contact-mask" required autocomplete="off"
                 class="border border-red-400 rounded-md px-1 outline-none max-w-full"
-                oninput={(e) => updateContact(e)}
+                oninput={(e) => updateClientName(e)}
+                /> -->
+                <input type="text" name="client-name" id="client-name" required autocomplete="off"
+                class="border border-red-400 rounded-md px-1 outline-none max-w-full" autocorrect="off"
+                oninput={(e) => updateClientName(e)}
                 />
             </div>
             <div class="flex flex-row gap-2 place-content-center">

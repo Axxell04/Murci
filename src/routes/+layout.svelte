@@ -53,13 +53,19 @@
 	// $inspect(actualRoute);
 </script>
 
+<svelte:head>
+	<title>
+		Murzi
+	</title>
+</svelte:head>
+
 <nav class="flex flex-col place-items-center gap-4 flex-grow">
 	<section class="relative flex place-content-center">
 		<h1 class="text-red-500 font-black text-4xl p-3">
 			<a class="hover:text-red-400 focus:text-red-400" href="/"
 			onfocus={(e) => cancelFocus(e)}
 			>
-				murci
+				murzi
 			</a>
 		</h1>
 		<button class="text-5xl absolute -bottom-4 hover:text-red-500 focus:text-red-500" 

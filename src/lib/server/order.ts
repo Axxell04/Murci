@@ -3,12 +3,12 @@ import { generateId } from "$lib/server/functions";
 import { db } from "$lib/server/db"
 import { eq } from 'drizzle-orm';
 
-export async function createOrder (content: object, contact: string) {
+export async function createOrder (content: object, clientName: string) {
     const orderId = generateId();
     const order: table.Order = {
         id: orderId,
         content,
-        contact,
+        clientName,
         createdAt: new Date(),
     }
 
