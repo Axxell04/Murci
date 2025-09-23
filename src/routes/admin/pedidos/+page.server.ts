@@ -2,15 +2,19 @@ import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { deleteOrder, getOrders, updateOrder } from "$lib/server/order";
 import { createRevenue } from "$lib/server/revenue";
+import type { OrderPagination } from "$lib/interfaces/order";
 
 export const load: PageServerLoad = async (event) => {
     if (!event.locals.user) {
         return redirect(302, '/login')
     }
-
+    const query = event.url.searchParams;
+    const cod = query.get("cod");
+    console.log(cod);
     // const pendingOrders = await getOrders(undefined, undefined, false);
     // const completedOrders = await getOrders(undefined, undefined, true);
-    const orderPagination = await getOrders(undefined, undefined, false);
+
+    const orderPagination = (await getOrders({completed: false, cod})) as OrderPagination;
 
     return {
         orderPagination
@@ -21,6 +25,7 @@ export const actions: Actions = {
     set_view_state: async (event) => {
         const formData = await event.request.formData();
         const viewState = formData.get('view_state') as string;
+        const cod = formData.get('cod') as string;
 
         if (!viewState) { return fail(400, { message: 'Error en los parámetros de la petición' }) }
 
@@ -28,12 +33,16 @@ export const actions: Actions = {
             path: '/'
         })
 
+        
         const completed = viewState ? (viewState === 'completed' ? true : false) : false;  
-        const orderPagination = await getOrders(undefined, undefined, completed);
+        const orderPagination = await getOrders({completed, cod});
 
         return {
             orderPagination
         }
+    },
+    done: async (event) => {
+        event.url.href = event.url.href.replace(event.url.search, '');
     },
     delete_order: async (event) => {
         const formData = await event.request.formData();
@@ -49,7 +58,7 @@ export const actions: Actions = {
         }
 
         const completed = event.locals.orderViewState ? (event.locals.orderViewState === 'completed' ? true : false) : false;
-        const orderPagination = await getOrders(undefined, undefined, completed);
+        const orderPagination = await getOrders({completed});
 
         return {
             orderPagination
@@ -71,7 +80,7 @@ export const actions: Actions = {
 
         const completed = event.locals.orderViewState ? (event.locals.orderViewState === 'completed' ? true : false) : false;
 
-        const orderPagination = await getOrders(undefined, undefined, completed)
+        const orderPagination = await getOrders({completed})
 
         return {
             orderPagination
@@ -101,7 +110,7 @@ export const actions: Actions = {
             return fail(500, { message: 'A ocurrido un error en el servidor' })
         }
         
-        const orderPagination = await getOrders(undefined, undefined, completed);
+        const orderPagination = await getOrders({completed});
 
         return {
             orderPagination
@@ -129,7 +138,7 @@ export const actions: Actions = {
             return fail(404, { message: 'Page not found' })
         }
         const nextPage = currentPage - 1;
-        const orderPagination = await getOrders(nextPage);
+        const orderPagination = await getOrders({page: nextPage});
 
         return {
             orderPagination
@@ -156,7 +165,7 @@ export const actions: Actions = {
             return fail(404, { message: 'Page not found' })
         }
         const nextPage = currentPage + 1;
-        const orderPagination = await getOrders(nextPage);
+        const orderPagination = await getOrders({page: nextPage});
 
         return {
             orderPagination
@@ -176,7 +185,7 @@ export const actions: Actions = {
             return fail(400, { message: 'Invalid pagination params' })
         }
 
-        const orderPagination = await getOrders(gotoPage, undefined, completed);
+        const orderPagination = await getOrders({page: gotoPage, completed});
 
         return {
             orderPagination

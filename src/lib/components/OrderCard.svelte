@@ -146,7 +146,7 @@
 tabindex="0"
 onkeydown={() => {}}
 role="button"
->
+>   
     <div class="flex flex-row gap-2 place-items-center place-content-between">
         <div class="flex flex-row place-content-between gap-2 px-1 text-xl place-items-center">
             <Icon icon="akar-icons:shopping-bag" class="text-3xl"/>
@@ -192,6 +192,14 @@ role="button"
                 </span>
             </div>
         </div>
+    </div>
+    <div class="flex flex-row gap-3 justify-center">
+        <span class="font-bold">
+            COD:
+        </span>
+        <span>
+            {order.id}
+        </span>
     </div>
     <span class="place-self-center">
         {order.createdAt.toLocaleDateString('es-EC', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}

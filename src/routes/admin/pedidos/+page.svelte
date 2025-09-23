@@ -14,6 +14,8 @@
 	import type { Order, OrderPagination } from "$lib/interfaces/order";
 	import type { PurchaseDetail } from "$lib/interfaces/cart";
 	import OrderCard from "$lib/components/OrderCard.svelte";
+	import { page } from "$app/state";
+	import { goto } from "$app/navigation";
 
     let { data }: PageProps = $props();
 
@@ -29,6 +31,9 @@
 
     // View State
     let viewState = $state('pending');
+
+    // ORDER COD
+    let cod = $derived(page.url.searchParams.get("cod"));
 
     // HTML Elements
     let selectStateElement: HTMLButtonElement | undefined = $state();
@@ -125,12 +130,12 @@
         }
     })
 
-    $effect(() => {
-        viewState;
-        if (typeof btnGetOrders !== 'undefined') {
-            // btnGetOrders.click();
-        }
-    });
+    // $effect(() => {
+    //     viewState;
+    //     if (typeof btnGetOrders !== 'undefined') {
+    //         // btnGetOrders.click();
+    //     }
+    // });
 
     onMount(() => {
         if (typeof btnSetInitViewState !== 'undefined') {
@@ -143,7 +148,17 @@
 <div in:fade class="flex flex-col gap-2 max-w-full max-h-full">
     <section class="px-10 w-full sticky -top-1 z-10 bg-stone-900/95 backdrop-blur-lg">
         <div class="flex flex-wrap gap-3 place-items-center place-content-between text-center text-red-400 font-normal p-4 border border-transparent border-b-red-400">
-            <div class="flex flex-row gap-2 place-items-center">
+            <button class="mx-auto py-1 px-3 border rounded-md hover:text-red-500 active:text-red-500 active:scale-90 {!cod ? 'hidden' : ''}"
+                onclick={() => {
+                    // page.url.href = page.url.href.replace(page.url.search, '');
+                    // page.url.search = '';
+                    window.location.href = page.url.href.replace(page.url.search, '');
+                    
+                }}
+            >
+                Hecho
+            </button>
+            <div class="flex flex-row gap-2 place-items-center {page.url.searchParams.get("cod") ? 'hidden' : ''}">
                 <form action="?/set_view_state" method="post" use:enhance={() => {
                     return async ({ result }) => {
                         if (result.type === "success") {
@@ -157,6 +172,7 @@
                 class="flex flex-col place-content-center relative"
                 >
                     <input type="text" hidden name="view_state" value={viewState} />
+                    <input type="text" hidden name="cod" value={cod} />                    
                     <button bind:this={selectStateElement} type="button" class="text-center text-2xl bg-transparent outline-none hover:text-red-500 focus:text-red-500" 
                     onclick={()=>toggleStateListIsVisible()}
                     onfocus={(e) => cancelFocus(e)}

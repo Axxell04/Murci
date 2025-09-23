@@ -1,10 +1,17 @@
 import * as table from '$lib/server/db/schema'
 import { generateId } from "$lib/server/functions";
 import { db } from "$lib/server/db"
-import { eq } from 'drizzle-orm';
+import { eq, jaccardDistance } from 'drizzle-orm';
+
+type GetOrderOptions = {
+    page?: number;
+    limit?: number; 
+    completed?: boolean
+    cod?: string | null
+}
 
 export async function createOrder (content: object, clientName: string) {
-    const orderId = generateId();
+    const orderId = generateId(10);
     const order: table.Order = {
         id: orderId,
         content,
@@ -15,11 +22,19 @@ export async function createOrder (content: object, clientName: string) {
     await db.insert(table.order).values(order).execute();
 }
 
-export async function getOrders (page: number = 1, limit: number = 10, completed?: boolean) {
+export async function getOrders (options: GetOrderOptions = {}) {
+    let { page = 1, limit = 10, completed, cod  } = options;
     const offset = (page - 1) * limit;
-    const orders = typeof completed === 'undefined' 
-        ? await db.select().from(table.order).limit(limit).offset(offset).orderBy(table.order.createdAt).execute()
-        : await db.select().from(table.order).where(eq(table.order.completed, completed)).limit(limit).offset(offset).orderBy(table.order.createdAt).execute()
+    let orders: table.Order[] = []
+    if (cod) {
+        orders = await db.select().from(table.order).where(eq(table.order.id, cod)).execute();
+        page = 0;
+    } else {
+        orders = typeof completed === 'undefined' 
+            ? await db.select().from(table.order).limit(limit).offset(offset).orderBy(table.order.createdAt).execute()
+            : await db.select().from(table.order).where(eq(table.order.completed, completed)).limit(limit).offset(offset).orderBy(table.order.createdAt).execute()
+
+    }
     
     const totalOrders = typeof completed === 'undefined'
         ? (await db.select().from(table.order).execute()).length 

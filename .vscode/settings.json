@@ -4,5 +4,10 @@
         "plaintext": false,
         "markdown": false,
         "scminput": false
+    },
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#4C105A",
+        "titleBar.activeBackground": "#6B167F",
+        "titleBar.activeForeground": "#FEFBFE"
     }
 }

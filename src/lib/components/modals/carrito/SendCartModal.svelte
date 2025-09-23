@@ -34,6 +34,12 @@
         }
     }
 
+    function sendWhatsApp () {
+        const number = "593997733619";
+        const message = encodeURIComponent("Hola, este es mi pedido");
+        window.open(`https://wa.me/${number}?text=${message}`, "_blank");
+    }
+
     $effect(() => {
         if (formMessage) {
             setTimeout(() => {
@@ -56,6 +62,7 @@
                 } else if (result.type === "success") {
                     resetCart();
                     toggleSendCartModalIsVisible(false);
+                    
                 }
             }
         }}
@@ -80,7 +87,7 @@
             </div>
             <div class="flex flex-row gap-2 place-content-center">
                 <button type="button" class="py-1 px-2 rounded border hover:text-red-500 focus:text-red-500"
-                onclick={() => toggleSendCartModalIsVisible(false)}
+                onclick={() => {toggleSendCartModalIsVisible(false); sendWhatsApp()}}
                 onfocus={(e) => cancelFocus(e)}
                 >
                     Cancelar
