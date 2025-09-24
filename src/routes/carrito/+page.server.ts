@@ -29,7 +29,10 @@ export const actions: Actions = {
         try {
             cart = JSON.parse(formData.get('cart') as string);
             if (!clientName || !isPurchaseDetail(cart)) { return fail(400, { message: 'Error en los parámetros de la petición' }) }
-            await createOrder(cart, clientName);
+            const cod = await createOrder(cart, clientName);
+            return {
+                cod
+            }
             
         } catch {
             return fail(500, { message: 'A ocurrido un error en el servidor' })            

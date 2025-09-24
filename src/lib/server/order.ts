@@ -27,6 +27,7 @@ export async function createOrder (content: object, clientName: string) {
     }
 
     await db.insert(table.order).values(order).execute();
+    return orderId;
 }
 
 export async function getOrders (options: GetOrderOptions = {}) {

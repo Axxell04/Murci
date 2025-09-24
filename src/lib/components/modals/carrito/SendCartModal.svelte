@@ -3,6 +3,7 @@
 	import ContainerModal from "../ContainerModal.svelte";
 	import { enhance } from "$app/forms";
 	import type { PurchaseDetail } from "$lib/interfaces/cart";
+	import { page } from "$app/state";
 
     interface Props {
         resetCart: () => void
@@ -34,9 +35,9 @@
         }
     }
 
-    function sendWhatsApp () {
+    function sendWhatsApp (cod: string) {
         const number = "593997733619";
-        const message = encodeURIComponent("Hola, este es mi pedido");
+        const message = encodeURIComponent(`Hola, este es mi pedido \n ${page.url.origin}/pedido/${cod}`);
         window.open(`https://wa.me/${number}?text=${message}`, "_blank");
     }
 
@@ -61,6 +62,9 @@
                     }
                 } else if (result.type === "success") {
                     resetCart();
+                    if (result.data?.cod) {
+                        sendWhatsApp(result.data?.cod as string);
+                    }
                     toggleSendCartModalIsVisible(false);
                     
                 }
@@ -87,7 +91,7 @@
             </div>
             <div class="flex flex-row gap-2 place-content-center">
                 <button type="button" class="py-1 px-2 rounded border hover:text-red-500 focus:text-red-500"
-                onclick={() => {toggleSendCartModalIsVisible(false); sendWhatsApp()}}
+                onclick={() => {toggleSendCartModalIsVisible(false)}}
                 onfocus={(e) => cancelFocus(e)}
                 >
                     Cancelar
