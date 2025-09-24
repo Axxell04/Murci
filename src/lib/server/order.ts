@@ -10,6 +10,13 @@ type GetOrderOptions = {
     cod?: string | null
 }
 
+export async function checkOrderExists (cod: string) {
+    const [order] = await db.select().from(table.order).where(eq(table.order.id, cod)).execute();
+    console.log(order);
+    if (order) return true;
+    return false;
+}
+
 export async function createOrder (content: object, clientName: string) {
     const orderId = generateId(10);
     const order: table.Order = {
