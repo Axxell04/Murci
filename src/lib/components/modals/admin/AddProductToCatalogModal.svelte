@@ -8,14 +8,13 @@
 	import { onMount } from "svelte";
 
     interface Props {
-        products: ProductComplete[]
         setProductPagination: (newProductPagination: ProductPagination) => void
         catalogId: string
         toggleAddProductToCatalogModalIsVisible: (visible?: boolean) => void
         addProductToCatalogModalIsVisible: boolean
     }
 
-    let { products, setProductPagination, catalogId, toggleAddProductToCatalogModalIsVisible, addProductToCatalogModalIsVisible }: Props = $props();
+    let { setProductPagination, catalogId, toggleAddProductToCatalogModalIsVisible, addProductToCatalogModalIsVisible }: Props = $props();
 
     let formMessage = $state('');
     
@@ -24,6 +23,7 @@
 
     let totalProductsList: ProductComplete[] = $state([]);
     let productsToAddList: ProductComplete[] = $state([]);
+    let productsInCatalog: ProductComplete[] = $state([]);
 
     function toggleProductToAdd (product: ProductComplete) {
         const initLength = productsToAddList.length;
@@ -39,15 +39,6 @@
             return true;
         }
         return false;
-    }
-
-    function filterTotalProducts (totalList: ProductComplete[]) {
-        totalList = totalList.filter((p) => {
-            const inList = products.some(product => product.product.id === p.product.id)
-            return !inList
-        })
-
-        return totalList;
     }
 
     function cancelFocus (e: FocusEvent) {
@@ -89,10 +80,9 @@
                                 formMessage = result.data.message as string;
                             }
                         } else if (result.type === "success") {
-                            if (result.data?.pagination) {
+                            if (result.data?.products) {
                                 // setProductPagination(result.data.pagination as ProductPagination);
-                                const pagination = result.data.pagination as ProductPagination;
-                                totalProductsList = filterTotalProducts(pagination.products);
+                                totalProductsList = result.data.products as ProductComplete[];
                             }
                         }
                     }

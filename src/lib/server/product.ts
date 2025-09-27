@@ -3,8 +3,15 @@ import { encodeBase32LowerCase, encodeBase32UpperCase } from '@oslojs/encoding';
 import { db } from '$lib/server/db';
 import path from 'path';
 import { promises as fs } from 'fs';
-import { desc, eq } from 'drizzle-orm';
+import { and, desc, eq, like } from 'drizzle-orm';
 import { addProductToCatalog } from './catalog';
+
+type GetProductsOptions = {
+    page?: number;
+    limit?: number;
+    search?: string;
+    catalogId?: string;
+}
 
 export async function createProduct(name: string, price: number, imgs: FileList, catalogId?: string) {
     const productId = generateId();
@@ -42,17 +49,32 @@ export async function createProduct(name: string, price: number, imgs: FileList,
 
 }
 
-export async function getProducts (page: number = 1, limit: number = 10, catalogId?: string) {
+export async function getProducts (options: GetProductsOptions = {}) {
     // console.log('CatalogID: ', catalogId)
+    let { page = 1, limit = 2, search, catalogId } = options;
     const offset = (page - 1) * limit;
-    const products = !catalogId 
-                        ? await db.select().from(table.product).limit(limit).offset(offset).orderBy(desc(table.product.createdAt)).execute() 
-                        : await db.select({
-                            id: table.product.id,
-                            name: table.product.name,
-                            price: table.product.price,
-                            createdAt: table.product.createdAt
-                        }).from(table.product).innerJoin(table.productCatalog, eq(table.product.id, table.productCatalog.productId)).where(eq(table.productCatalog.catalogId, catalogId ?? '')).limit(limit).offset(offset).orderBy(desc(table.product.createdAt)).execute()
+    let products: table.Product[];
+    
+    if (search) {
+        const searchPattern = `%${search}%`
+        products= !catalogId 
+                            ? await db.select().from(table.product).where(like(table.product.name, searchPattern)).limit(limit).offset(offset).orderBy(desc(table.product.createdAt)).execute() 
+                            : await db.select({
+                                id: table.product.id,
+                                name: table.product.name,
+                                price: table.product.price,
+                                createdAt: table.product.createdAt
+                            }).from(table.product).innerJoin(table.productCatalog, eq(table.product.id, table.productCatalog.productId)).where(and(eq(table.productCatalog.catalogId, catalogId ?? ''), like(table.product.name, searchPattern))).limit(limit).offset(offset).orderBy(desc(table.product.createdAt)).execute()
+    } else {
+        products= !catalogId 
+                            ? await db.select().from(table.product).limit(limit).offset(offset).orderBy(desc(table.product.createdAt)).execute() 
+                            : await db.select({
+                                id: table.product.id,
+                                name: table.product.name,
+                                price: table.product.price,
+                                createdAt: table.product.createdAt
+                            }).from(table.product).innerJoin(table.productCatalog, eq(table.product.id, table.productCatalog.productId)).where(eq(table.productCatalog.catalogId, catalogId ?? '')).limit(limit).offset(offset).orderBy(desc(table.product.createdAt)).execute()
+    }
                         
                         
     const listProducts: {product: table.Product, imgs: table.Img[]}[] = [];

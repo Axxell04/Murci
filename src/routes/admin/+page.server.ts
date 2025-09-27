@@ -12,7 +12,7 @@ export const load: PageServerLoad = async (event) => {
 
     const catalogId = event.locals.catalogId;
 
-    const pagination = await getProducts(undefined, undefined, catalogId ?? undefined);
+    const pagination = await getProducts({catalogId});
     const catalogs = await getCatalogs();
 
     return {
@@ -33,22 +33,36 @@ export const actions: Actions = {
 
         redirect(302, '/login')
     },
-    get_products: async () => {
+    get_products: async (event) => {
+        const catalogId = event.locals.catalogId;
+        const pagination = await getProducts({limit: 9999999});
+        const paginationOfCatalog = await getProducts({limit: 999999, catalogId})
+
+        let totalList: ProductComplete[] = pagination.products;
+        let productsInCatalog: ProductComplete[] = paginationOfCatalog.products;
+
+        const products = totalList.filter((p) => {
+            const inList = productsInCatalog.some(product => product.product.id === p.product.id)
+            return !inList
+        })
         
-        const pagination = await getProducts(undefined, 999999, undefined);
-        
-        // return new Response(JSON.stringify({
-        //     pagination: pagination
-        // }))
 
         return {
-            pagination: pagination
+            products
+        }
+    },
+    get_products_in_catalog: async (event) => {
+        const catalogId = event.locals.catalogId;
+        const pagination = await getProducts({limit: 999999, catalogId})
+        return {
+            pagination
         }
     },
     prev_page: async (event) => {
         const formData = await event.request.formData();
         let totalPages = 0;
         let currentPage = 0;
+        const catalogId = event.locals.catalogId;
         
         try {
             totalPages = parseInt(formData.get('total_pages') as string);
@@ -66,7 +80,7 @@ export const actions: Actions = {
             return fail(404, { message: 'Page not found' })
         }
         const nextPage = currentPage - 1;
-        const pagination = await getProducts(nextPage);
+        const pagination = await getProducts({page: nextPage, catalogId});
 
         return {
             pagination: pagination
@@ -76,6 +90,7 @@ export const actions: Actions = {
         const formData = await event.request.formData();
         let totalPages = 0;
         let currentPage = 0;
+        const catalogId = event.locals.catalogId;
         
         try {
             totalPages = parseInt(formData.get('total_pages') as string);
@@ -93,7 +108,7 @@ export const actions: Actions = {
             return fail(404, { message: 'Page not found' })
         }
         const nextPage = currentPage + 1;
-        const pagination = await getProducts(nextPage);
+        const pagination = await getProducts({page: nextPage, catalogId});
 
         return {
             pagination: pagination
@@ -113,7 +128,7 @@ export const actions: Actions = {
             return fail(400, { message: 'Invalid pagination params' })
         }
 
-        const pagination = await getProducts(gotoPage, undefined, catalogId);
+        const pagination = await getProducts({page: gotoPage, catalogId});
 
         return {
             pagination: pagination
@@ -132,7 +147,7 @@ export const actions: Actions = {
                 path: '/'
             })
         }
-        const pagination = await getProducts(undefined, undefined, catalogId ?? undefined);
+        const pagination = await getProducts({catalogId});
 
         return {
             pagination: pagination
@@ -162,7 +177,7 @@ export const actions: Actions = {
             return fail(500, { message: 'Internal server error' });
         }
 
-        const pagination = await getProducts(undefined, undefined, catalogId ?? undefined);
+        const pagination = await getProducts({catalogId});
         return {pagination: pagination};
     },
     delete_product: async (event) => {
@@ -177,7 +192,7 @@ export const actions: Actions = {
             return fail(500, { message: 'Internal server error' })
         }
         
-        const pagination = await getProducts(undefined, undefined, catalogId);
+        const pagination = await getProducts({catalogId});
         return {
             pagination: pagination
         }
@@ -221,7 +236,7 @@ export const actions: Actions = {
         }
 
 
-        const pagination = await getProducts(undefined, undefined, catalogId);
+        const pagination = await getProducts({catalogId});
         return {
             pagination: pagination
         }
@@ -245,7 +260,7 @@ export const actions: Actions = {
             console.log(e);
         }   
 
-        const pagination = await getProducts(undefined, undefined, catalogId);
+        const pagination = await getProducts({catalogId});
         return {
             pagination: pagination
         }
@@ -266,7 +281,7 @@ export const actions: Actions = {
             return fail(500, { message: 'Internal server error' })
         }
 
-        const pagination = await getProducts(undefined, undefined, catalogId);
+        const pagination = await getProducts({catalogId});
         return {
             pagination: pagination
         }

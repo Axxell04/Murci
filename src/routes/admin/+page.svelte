@@ -127,6 +127,7 @@
         scrollTo({behavior: 'smooth', top: 170})
     })
     
+    $inspect(productPagination);
     
     $effect(() => {
         if (typeof selectCatalogElement !== 'undefined' && catalogListIsVisible) {
@@ -323,5 +324,5 @@
     <AddProductModal {setProductPagination} {toggleAddProductModalIsVisible} {addProductModalIsVisible} />
     <DeleteProductModal {setProductPagination} {catalogId} {toggleDeleteProductModalIsVisible} {deleteProductModalIsVisible} {productSelected} />
     <EditProductModal {setProductPagination} {toggleEditProductModalIsVisible} {editProductModalIsVisible} {productSelected} />
-    <AddProductToCatalogModal {products} {setProductPagination} {catalogId} {toggleAddProductToCatalogModalIsVisible} {addProductToCatalogModalIsVisible} />
+    <AddProductToCatalogModal {setProductPagination} {catalogId} {toggleAddProductToCatalogModalIsVisible} {addProductToCatalogModalIsVisible} />
 </div>

@@ -24,12 +24,18 @@
     let catalogs = $state(data.catalogs);
     let catalogId = $state(data.catalogId ?? '');
 
+    // Search
+    let inputSearchIsVisible = $state(false);
+    let searchValue = $state("");
+
     // Cart
     let cart = $state(data.cart);
 
     // HTML Elements
     let selectCatalogElement: HTMLButtonElement | undefined = $state();
     let btnUpdateCartElement: HTMLButtonElement | undefined = $state();
+    let inputSearch: HTMLInputElement | undefined = $state();
+    let btnInputSearch: HTMLButtonElement | undefined = $state();
 
     let selectCatalogElementHeight: number = $state(9);
 
@@ -71,6 +77,13 @@
             catalogListIsVisible = visible;
         } else {
             catalogListIsVisible = !catalogListIsVisible;
+        }
+    }
+    function toggleInputSearchIsVisible (visible?: boolean) {
+        if (typeof visible !== "undefined") {
+            inputSearchIsVisible = visible;
+        } else {
+            inputSearchIsVisible = !inputSearchIsVisible;
         }
     }
 
@@ -124,6 +137,24 @@
             }, 200)
         }
     }
+
+    let searchTimeout: ReturnType<typeof setTimeout>;
+    function updateSearchValue (e: Event) {
+        const target = e.target as HTMLInputElement;
+        const value = target.value;
+        searchValue = value;
+        clearTimeout(searchTimeout);
+
+        searchTimeout = setTimeout(() => {
+            btnInputSearch?.click();
+        }, 1000)
+    }
+    function clearSearchValue () {
+        searchValue = "";
+        setTimeout(() => {
+            btnInputSearch?.click();
+        }, 500)
+    }
  
     // Effects
 
@@ -150,13 +181,14 @@
 
 <div in:fade class="flex flex-col gap-2 max-w-full max-h-full">
     <section class="px-10 w-full sticky -top-1 z-10 bg-stone-900/95 backdrop-blur-lg">
-        <div class="flex flex-wrap gap-3 place-items-center place-content-between text-center text-red-400 font-normal p-4 border border-transparent border-b-red-400">
+        <div class="flex flex-wrap gap-3 place-items-center text-center text-red-400 font-normal p-4 border border-transparent border-b-red-400">
             <div class="flex flex-row gap-2 place-items-center">
                 <form action="?/set_catalog" method="post" use:enhance={() => {
                     return async ({ result }) => {
                         if (result.type === "success") {
                             if (result.data?.pagination) {
                                 setProductPagination(result.data.pagination as ProductPagination);
+                                toggleInputSearchIsVisible(false);                                
                             }
                         }
                     }
@@ -205,6 +237,7 @@
                 >
                     <input type="number" hidden name="current_page" value={productPagination.currentPage}>
                     <input type="number" hidden name="total_pages" value={productPagination.totalPages}>
+                    <input type="text" hidden name="search-value" value={searchValue}>
                     {#if productPagination.currentPage > 1}
                     <button class="hover:text-red-500 focus:text-red-500" onfocus={(e) => cancelFocus(e)}>
                         <Icon icon="icon-park-outline:left-c" class="text-3xl" />
@@ -228,6 +261,7 @@
                 class="flex flex-col place-content-center relative"
                 >
                     <input type="number" hidden name="goto_page" value={gotoPage} >
+                    <input type="text" hidden name="search-value" value={searchValue}>                    
                     <!-- <input type="text" class="w-10 text-center text-3xl bg-transparent outline-none" value={productPagination.currentPage} oninput={(e)=>updatePagination(e)} /> -->
                     <button type="button" class="w-10 text-center text-3xl bg-transparent h-9 outline-none hover:text-red-500 focus:text-red-500" 
                     onclick={()=>toggleGotoPageListIsVisible()}
@@ -268,6 +302,7 @@
                 >
                     <input type="number" hidden name="current_page" value={productPagination.currentPage}>
                     <input type="number" hidden name="total_pages" value={productPagination.totalPages}>
+                    <input type="text" hidden name="search-value" value={searchValue}>
                     {#if productPagination.currentPage < productPagination.totalPages}
                     <button class="hover:text-red-500 focus-within:text-red-500" onfocus={(e) => cancelFocus(e)}>
                         <Icon icon="icon-park-outline:right-c" class="text-3xl" />
@@ -279,7 +314,42 @@
                     {/if}
                 </form>
             </div>
-            <div class="flex flex-row">
+            <div class="flex flex-row gap-2">
+                <form action="?/search" method="post" use:enhance={() => {
+                    return async ({result}) => {
+                        if (result.type === "success") {
+                            if (result.data?.pagination) {
+                                setProductPagination(result.data.pagination as ProductPagination);
+                            }
+                        }
+                    }
+                }}>
+                    <input type="hidden" name="value" value={searchValue}>
+                    <button bind:this={btnInputSearch} class="hidden">
+                        Search
+                    </button>
+                </form>
+                {#if inputSearchIsVisible}
+                <input bind:this={inputSearch} transition:slide={{axis: "x"}} type="text" placeholder="Search..." class="outline-none border rounded-md px-1"
+                    oninput={(e) => updateSearchValue(e)}
+                >                    
+                {/if}
+
+                {#if inputSearchIsVisible}
+                <button in:scale onclick={() => {clearSearchValue(); toggleInputSearchIsVisible(false)}}>
+                    <Icon icon="lucide:search-x" class="text-4xl"/>
+                </button>
+                {:else}
+                <button in:scale onclick={() => {toggleInputSearchIsVisible(true);
+                    setTimeout(() => {
+                        inputSearch?.focus();
+                    }, 100);
+                }}>
+                    <Icon icon="lucide:search" class="text-4xl" />                    
+                </button>
+                {/if}
+            </div>
+            <div class="flex flex-row ml-auto">
                 <a href="/carrito" class="flex flex-row gap-1 justify-end self-end place-items-center hover:text-red-500 focus:text-red-500"
                 onfocus={(e) => cancelFocus(e)}
                 >

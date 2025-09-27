@@ -55,7 +55,7 @@
 
 <svelte:head>
 	<title>
-		Murzi
+		Murci
 	</title>
 </svelte:head>
 
@@ -65,7 +65,7 @@
 			<a class="hover:text-red-400 focus:text-red-400" href="/"
 			onfocus={(e) => cancelFocus(e)}
 			>
-				murzi
+				murci
 			</a>
 		</h1>
 		<button class="text-5xl absolute -bottom-4 hover:text-red-500 focus:text-red-500" 

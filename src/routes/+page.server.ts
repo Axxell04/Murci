@@ -7,8 +7,8 @@ export const load: PageServerLoad = async (event) => {
     const catalogId = event.locals.catalogId;
 
     const cart = event.locals.cart;
-    
-    const pagination = await getProducts(undefined, undefined, catalogId ?? undefined);
+
+    const pagination = await getProducts({catalogId});
     const catalogs = await getCatalogs();
 
     return {
@@ -24,6 +24,7 @@ export const actions: Actions = {
         const formData = await event.request.formData();
         let totalPages = 0;
         let currentPage = 0;
+        const catalogId = event.locals.catalogId;
         
         try {
             totalPages = parseInt(formData.get('total_pages') as string);
@@ -41,7 +42,7 @@ export const actions: Actions = {
             return fail(404, { message: 'Page not found' })
         }
         const nextPage = currentPage - 1;
-        const pagination = await getProducts(nextPage);
+        const pagination = await getProducts({page: nextPage, catalogId});
 
         return {
             pagination: pagination
@@ -51,6 +52,7 @@ export const actions: Actions = {
         const formData = await event.request.formData();
         let totalPages = 0;
         let currentPage = 0;
+        const catalogId = event.locals.catalogId;
         
         try {
             totalPages = parseInt(formData.get('total_pages') as string);
@@ -68,10 +70,20 @@ export const actions: Actions = {
             return fail(404, { message: 'Page not found' })
         }
         const nextPage = currentPage + 1;
-        const pagination = await getProducts(nextPage);
+        const pagination = await getProducts({page: nextPage, catalogId});
 
         return {
             pagination: pagination
+        }
+    },
+    search: async (event) => {
+        const formData = await event.request.formData();
+        const value = formData.get("value") as string;
+        const catalogId = event.locals.catalogId;
+        const pagination = await getProducts({catalogId, search: value})
+
+        return {
+            pagination
         }
     },
     goto_page: async (event) => {
@@ -88,7 +100,7 @@ export const actions: Actions = {
             return fail(400, { message: 'Invalid pagination params' })
         }
 
-        const pagination = await getProducts(gotoPage, undefined, catalogId);
+        const pagination = await getProducts({page: gotoPage, catalogId});
 
         return {
             pagination: pagination
@@ -107,7 +119,7 @@ export const actions: Actions = {
                 path: '/'
             })
         }
-        const pagination = await getProducts(undefined, undefined, catalogId ?? undefined);
+        const pagination = await getProducts({catalogId});
 
         return {
             pagination: pagination
