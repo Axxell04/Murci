@@ -25,6 +25,7 @@ export const actions: Actions = {
         let totalPages = 0;
         let currentPage = 0;
         const catalogId = event.locals.catalogId;
+        const searchValue = formData.get("search-value") as string;
         
         try {
             totalPages = parseInt(formData.get('total_pages') as string);
@@ -42,7 +43,7 @@ export const actions: Actions = {
             return fail(404, { message: 'Page not found' })
         }
         const nextPage = currentPage - 1;
-        const pagination = await getProducts({page: nextPage, catalogId});
+        const pagination = await getProducts({page: nextPage, catalogId, search: searchValue});
 
         return {
             pagination: pagination
@@ -53,6 +54,7 @@ export const actions: Actions = {
         let totalPages = 0;
         let currentPage = 0;
         const catalogId = event.locals.catalogId;
+        const searchValue = formData.get("search-value") as string;
         
         try {
             totalPages = parseInt(formData.get('total_pages') as string);
@@ -70,7 +72,7 @@ export const actions: Actions = {
             return fail(404, { message: 'Page not found' })
         }
         const nextPage = currentPage + 1;
-        const pagination = await getProducts({page: nextPage, catalogId});
+        const pagination = await getProducts({page: nextPage, catalogId, search: searchValue});
 
         return {
             pagination: pagination
@@ -90,6 +92,7 @@ export const actions: Actions = {
         const formData = await event.request.formData();
         let gotoPage = 0;
         const catalogId = event.locals.catalogId;
+        const searchValue = formData.get("search-value") as string;
 
         try {
             gotoPage = parseInt(formData.get('goto_page') as string);
@@ -100,7 +103,7 @@ export const actions: Actions = {
             return fail(400, { message: 'Invalid pagination params' })
         }
 
-        const pagination = await getProducts({page: gotoPage, catalogId});
+        const pagination = await getProducts({page: gotoPage, catalogId, search: searchValue});
 
         return {
             pagination: pagination

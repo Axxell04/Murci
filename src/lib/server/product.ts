@@ -88,14 +88,30 @@ export async function getProducts (options: GetProductsOptions = {}) {
 
     } 
 
-    const totalProducts = !catalogId
-        ? (await db.select().from(table.product).execute()).length 
-        : (await db.select({
-            id: table.product.id,
-            name: table.product.name,
-            price: table.product.price,
-            createdAt: table.product.createdAt
-        }).from(table.product).innerJoin(table.productCatalog, eq(table.product.id, table.productCatalog.productId)).where(eq(table.productCatalog.catalogId, catalogId ?? '')).execute()).length
+    let totalProducts: number;
+    if (search) {
+        const searchPattern = `%${search}%`;
+        totalProducts = !catalogId
+            ? (await db.select().from(table.product).where(like(table.product.name, searchPattern)).execute()).length 
+            : (await db.select({
+                id: table.product.id,
+                name: table.product.name,
+                price: table.product.price,
+                createdAt: table.product.createdAt
+            }).from(table.product).innerJoin(table.productCatalog, eq(table.product.id, table.productCatalog.productId)).where(and(eq(table.productCatalog.catalogId, catalogId ?? ''), like(table.product.name, searchPattern))).execute()).length
+            
+    } else {
+        totalProducts = !catalogId
+            ? (await db.select().from(table.product).execute()).length 
+            : (await db.select({
+                id: table.product.id,
+                name: table.product.name,
+                price: table.product.price,
+                createdAt: table.product.createdAt
+            }).from(table.product).innerJoin(table.productCatalog, eq(table.product.id, table.productCatalog.productId)).where(eq(table.productCatalog.catalogId, catalogId ?? '')).execute()).length
+
+    }
+
     const totalPages = Math.ceil(totalProducts / limit);
 
     return {
