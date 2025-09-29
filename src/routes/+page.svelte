@@ -366,8 +366,10 @@
 		</div>
 	</section>
     <section class="flex flex-wrap justify-center p-2 gap-3">
-        {#each products as product}
-            <ProductCard {product} {toggleProductModalIsVisible} {productSelected} {selectThisProduct} />
+        {#each products as product (product.product.id)}
+            <div in:scale={{delay: 100 * products.indexOf(product)}}>
+                <ProductCard {product} {toggleProductModalIsVisible} {productSelected} {selectThisProduct} />                
+            </div>
         {/each}
     </section>
 </div>
