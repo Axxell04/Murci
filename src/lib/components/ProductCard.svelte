@@ -43,15 +43,16 @@
 
 </script>
 
-<div class="w-72 h-fit flex flex-col relative bg-stone-800 rounded-xl cursor-pointer card outline-none active:scale-95"
+<div class="w-72 h-fit flex flex-col relative bg-stone-800 rounded-xl cursor-pointer card outline-none"
     onclick={()=>selectThisProduct(product)}
     role="button"
     tabindex="0"
     onkeydown={()=>{}}
 >
     <div class="img-container relative w-full flex flex-row flex-grow rounded-t-xl overflow-y-hidden overflow-x-auto snap-x snap-mandatory scroll-smooth" >
-        <img src={product.imgs[0].url} alt={product.imgs[0].id} class="object-cover flex-shrink-0 snap-center w-72" loading="lazy">
-        <img src={product.imgs[1].url} alt={product.imgs[1].id} class="object-cover flex-shrink-0 snap-center w-72" loading="lazy">
+        {#each product.imgs as imgProduct }
+        <img src={imgProduct.url} alt={imgProduct.id} class="object-cover flex-shrink-0 snap-center w-72" loading="lazy">            
+        {/each}
     </div>
     <div class="flex flex-col py-1 px-2">
         <p class=" text-red-400 font-extrabold">

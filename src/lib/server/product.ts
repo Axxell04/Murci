@@ -51,7 +51,7 @@ export async function createProduct(name: string, price: number, imgs: FileList,
 
 export async function getProducts (options: GetProductsOptions = {}) {
     // console.log('CatalogID: ', catalogId)
-    let { page = 1, limit = 2, search, catalogId } = options;
+    let { page = 1, limit = 4, search, catalogId } = options;
     const offset = (page - 1) * limit;
     let products: table.Product[];
     
