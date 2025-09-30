@@ -9,6 +9,8 @@
 		"preview": "vite preview",
 		"start": "node build",
 		"createAdmin": "node scripts/createAdmin.js",
+		"backup": "node scripts/backup.js",
+		"restore": "node scripts/restore.js",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",

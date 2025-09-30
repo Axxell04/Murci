@@ -1,0 +1,348 @@
+{
+  "user": [
+    {
+      "id": "wrn3o5swfebfdfg65ei57h43",
+      "age": null,
+      "username": "Axxell04",
+      "passwordHash": "$argon2id$v=19$m=19456,t=2,p=1$wkr287fXYobwWk6WgyV4DQ$vY7MLeg4FaXvldkKENhNd906miD7qsStOOHESjfdLVQ",
+      "admin": true
+    }
+  ],
+  "catalog": [
+    {
+      "id": "2q7banpcpfleqzzgshpjdkh5",
+      "name": "2K",
+      "description": "Estilos libres",
+      "createdAt": "2025-09-27T18:31:48.000Z"
+    }
+  ],
+  "contact": [],
+  "cost": [],
+  "expense": [],
+  "product": [
+    {
+      "id": "ry43km6pmbltmjpjiw4u767e",
+      "name": "C1",
+      "price": 29.99,
+      "createdAt": "2025-09-19T23:37:57.000Z"
+    },
+    {
+      "id": "g6za77wvpstki64euip2e2zx",
+      "name": "Dipplo Wish",
+      "price": 35.99,
+      "createdAt": "2025-09-27T18:28:27.000Z"
+    },
+    {
+      "id": "d2o7phgdrs4quyxmz4vyvnts",
+      "name": "Sicko",
+      "price": 39.99,
+      "createdAt": "2025-09-27T18:29:40.000Z"
+    },
+    {
+      "id": "ur4rigvom6g3i5ibeyhq5obt",
+      "name": "Saint Stance",
+      "price": 24.99,
+      "createdAt": "2025-09-27T18:52:00.000Z"
+    },
+    {
+      "id": "srq6pmzxfhfhqm5tu63xe2ob",
+      "name": "Murci Eyes",
+      "price": 34.99,
+      "createdAt": "2025-09-27T18:52:59.000Z"
+    }
+  ],
+  "img": [
+    {
+      "id": "4jbeop5e6crs3saiztic6cfv",
+      "url": "/imgs/A447LIANTOAKRO4IB3K2QJBN.webp",
+      "productId": "ry43km6pmbltmjpjiw4u767e"
+    },
+    {
+      "id": "svfxds5xvaljnmtb6bkuzxrc",
+      "url": "/imgs/MCVC6LPOCJF6YQRWDMGTAJLF.webp",
+      "productId": "ry43km6pmbltmjpjiw4u767e"
+    },
+    {
+      "id": "mj3dvx5b7vtn6anvfpmwazyv",
+      "url": "/imgs/576WIBTMT3JTLKPM4THQ7FRE.webp",
+      "productId": "g6za77wvpstki64euip2e2zx"
+    },
+    {
+      "id": "txmqxw2t2vdimrpkm37v2zun",
+      "url": "/imgs/JG3WEKKTDDMXUTVRAQUT7UZV.webp",
+      "productId": "g6za77wvpstki64euip2e2zx"
+    },
+    {
+      "id": "kihbswsqabigdgsew3oi32z4",
+      "url": "/imgs/IR5EGTFIH4XFY3X3UDJPCEKX.webp",
+      "productId": "d2o7phgdrs4quyxmz4vyvnts"
+    },
+    {
+      "id": "qyneynykt2knxnz6d4jxind4",
+      "url": "/imgs/OUODTUNYWVCGAO343VDPLACF.webp",
+      "productId": "d2o7phgdrs4quyxmz4vyvnts"
+    },
+    {
+      "id": "behfbugwzvzjopk2abztslj7",
+      "url": "/imgs/REBVZY63OJZNMUIZLGPJ7TSZ.webp",
+      "productId": "ur4rigvom6g3i5ibeyhq5obt"
+    },
+    {
+      "id": "jurgk4jk3lrl7schl3rnecla",
+      "url": "/imgs/O3YO2HUD73JUD6AJCV5R7CRP.webp",
+      "productId": "ur4rigvom6g3i5ibeyhq5obt"
+    },
+    {
+      "id": "gc32274vepzgaspunpcewvbd",
+      "url": "/imgs/ZXR7C27JEN467SB6TJAAJFU3.webp",
+      "productId": "srq6pmzxfhfhqm5tu63xe2ob"
+    },
+    {
+      "id": "gyzt2bdgvvimwucfgi3ueqyj",
+      "url": "/imgs/CIVWXCWWIFC6ONKBODRL43TU.webp",
+      "productId": "srq6pmzxfhfhqm5tu63xe2ob"
+    },
+    {
+      "id": "dhn2y66yxom5lc6vwzucmzir",
+      "url": "/imgs/UMQGXCIP2X2I2OEV6LMC5RD5.webp",
+      "productId": "srq6pmzxfhfhqm5tu63xe2ob"
+    }
+  ],
+  "productCatalog": [
+    {
+      "id": "mwtufpdboczotx42lygmtu5u",
+      "productId": "ry43km6pmbltmjpjiw4u767e",
+      "catalogId": "2q7banpcpfleqzzgshpjdkh5"
+    },
+    {
+      "id": "gous6pn4oog6owi6nbelfxdn",
+      "productId": "ur4rigvom6g3i5ibeyhq5obt",
+      "catalogId": "2q7banpcpfleqzzgshpjdkh5"
+    },
+    {
+      "id": "jzxo5gk7dhmwrthhtqa4g25v",
+      "productId": "d2o7phgdrs4quyxmz4vyvnts",
+      "catalogId": "2q7banpcpfleqzzgshpjdkh5"
+    },
+    {
+      "id": "z37z77qqgzrkwshriynwb6cz",
+      "productId": "srq6pmzxfhfhqm5tu63xe2ob",
+      "catalogId": "2q7banpcpfleqzzgshpjdkh5"
+    }
+  ],
+  "revenue": [
+    {
+      "id": "yzmugkfpxuvhtdrdtiau2mmq",
+      "value": 14.99,
+      "reason": "Orden completada",
+      "createdAt": "2025-09-23T05:42:40.000Z"
+    },
+    {
+      "id": "wmghocxrdlkjuffrfsmjzcuf",
+      "value": 14.99,
+      "reason": "Orden completada",
+      "createdAt": "2025-09-23T05:44:38.000Z"
+    },
+    {
+      "id": "hsfdsxzcz6aih52ws6figoco",
+      "value": 14.99,
+      "reason": "Orden completada",
+      "createdAt": "2025-09-23T05:44:47.000Z"
+    }
+  ],
+  "order": [
+    {
+      "id": "vpkiouuyzglenz4b45yc3tpr",
+      "content": [
+        {
+          "product": {
+            "product": {
+              "id": "ry43km6pmbltmjpjiw4u767e",
+              "name": "C1",
+              "price": 14.99,
+              "createdAt": "2025-09-19T23:37:57.000Z"
+            },
+            "imgs": [
+              {
+                "id": "4jbeop5e6crs3saiztic6cfv",
+                "url": "/imgs/A447LIANTOAKRO4IB3K2QJBN.webp",
+                "productId": "ry43km6pmbltmjpjiw4u767e"
+              },
+              {
+                "id": "svfxds5xvaljnmtb6bkuzxrc",
+                "url": "/imgs/MCVC6LPOCJF6YQRWDMGTAJLF.webp",
+                "productId": "ry43km6pmbltmjpjiw4u767e"
+              }
+            ]
+          },
+          "amount": 1
+        }
+      ],
+      "completed": false,
+      "clientName": "Axel lajones",
+      "createdAt": "2025-09-19T23:42:27.000Z",
+      "revenueId": null
+    },
+    {
+      "id": "j7qm7",
+      "content": [
+        {
+          "product": {
+            "product": {
+              "id": "ry43km6pmbltmjpjiw4u767e",
+              "name": "C1",
+              "price": 14.99,
+              "createdAt": "2025-09-19T23:37:57.000Z"
+            },
+            "imgs": [
+              {
+                "id": "4jbeop5e6crs3saiztic6cfv",
+                "url": "/imgs/A447LIANTOAKRO4IB3K2QJBN.webp",
+                "productId": "ry43km6pmbltmjpjiw4u767e"
+              },
+              {
+                "id": "svfxds5xvaljnmtb6bkuzxrc",
+                "url": "/imgs/MCVC6LPOCJF6YQRWDMGTAJLF.webp",
+                "productId": "ry43km6pmbltmjpjiw4u767e"
+              }
+            ]
+          },
+          "amount": 1
+        }
+      ],
+      "completed": false,
+      "clientName": "Juan",
+      "createdAt": "2025-09-23T04:27:35.000Z",
+      "revenueId": null
+    },
+    {
+      "id": "bg6bwzmcpj",
+      "content": [
+        {
+          "product": {
+            "product": {
+              "id": "ry43km6pmbltmjpjiw4u767e",
+              "name": "C1",
+              "price": 14.99,
+              "createdAt": "2025-09-19T23:37:57.000Z"
+            },
+            "imgs": [
+              {
+                "id": "4jbeop5e6crs3saiztic6cfv",
+                "url": "/imgs/A447LIANTOAKRO4IB3K2QJBN.webp",
+                "productId": "ry43km6pmbltmjpjiw4u767e"
+              },
+              {
+                "id": "svfxds5xvaljnmtb6bkuzxrc",
+                "url": "/imgs/MCVC6LPOCJF6YQRWDMGTAJLF.webp",
+                "productId": "ry43km6pmbltmjpjiw4u767e"
+              }
+            ]
+          },
+          "amount": 5
+        }
+      ],
+      "completed": false,
+      "clientName": "gggg",
+      "createdAt": "2025-09-23T04:28:20.000Z",
+      "revenueId": null
+    },
+    {
+      "id": "5en6exxv4h",
+      "content": [
+        {
+          "product": {
+            "product": {
+              "id": "ry43km6pmbltmjpjiw4u767e",
+              "name": "C1",
+              "price": 14.99,
+              "createdAt": "2025-09-19T23:37:57.000Z"
+            },
+            "imgs": [
+              {
+                "id": "4jbeop5e6crs3saiztic6cfv",
+                "url": "/imgs/A447LIANTOAKRO4IB3K2QJBN.webp",
+                "productId": "ry43km6pmbltmjpjiw4u767e"
+              },
+              {
+                "id": "svfxds5xvaljnmtb6bkuzxrc",
+                "url": "/imgs/MCVC6LPOCJF6YQRWDMGTAJLF.webp",
+                "productId": "ry43km6pmbltmjpjiw4u767e"
+              }
+            ]
+          },
+          "amount": 2
+        }
+      ],
+      "completed": false,
+      "clientName": "yyyyy",
+      "createdAt": "2025-09-24T20:47:25.000Z",
+      "revenueId": null
+    },
+    {
+      "id": "qkenwyre2m",
+      "content": [
+        {
+          "product": {
+            "product": {
+              "id": "ry43km6pmbltmjpjiw4u767e",
+              "name": "C1",
+              "price": 14.99,
+              "createdAt": "2025-09-19T23:37:57.000Z"
+            },
+            "imgs": [
+              {
+                "id": "4jbeop5e6crs3saiztic6cfv",
+                "url": "/imgs/A447LIANTOAKRO4IB3K2QJBN.webp",
+                "productId": "ry43km6pmbltmjpjiw4u767e"
+              },
+              {
+                "id": "svfxds5xvaljnmtb6bkuzxrc",
+                "url": "/imgs/MCVC6LPOCJF6YQRWDMGTAJLF.webp",
+                "productId": "ry43km6pmbltmjpjiw4u767e"
+              }
+            ]
+          },
+          "amount": 3
+        }
+      ],
+      "completed": false,
+      "clientName": "Mayckel",
+      "createdAt": "2025-09-24T21:28:43.000Z",
+      "revenueId": null
+    },
+    {
+      "id": "c4u3qhyqkv",
+      "content": [
+        {
+          "product": {
+            "product": {
+              "id": "ry43km6pmbltmjpjiw4u767e",
+              "name": "C1",
+              "price": 14.99,
+              "createdAt": "2025-09-19T23:37:57.000Z"
+            },
+            "imgs": [
+              {
+                "id": "4jbeop5e6crs3saiztic6cfv",
+                "url": "/imgs/A447LIANTOAKRO4IB3K2QJBN.webp",
+                "productId": "ry43km6pmbltmjpjiw4u767e"
+              },
+              {
+                "id": "svfxds5xvaljnmtb6bkuzxrc",
+                "url": "/imgs/MCVC6LPOCJF6YQRWDMGTAJLF.webp",
+                "productId": "ry43km6pmbltmjpjiw4u767e"
+              }
+            ]
+          },
+          "amount": 6
+        }
+      ],
+      "completed": false,
+      "clientName": "777",
+      "createdAt": "2025-09-24T21:31:02.000Z",
+      "revenueId": null
+    }
+  ],
+  "user_token": []
+}
