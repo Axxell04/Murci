@@ -86,7 +86,7 @@
 
 </script>
 
-<div transition:fade class="flex flex-col gap-5">
+<div in:fade class="flex flex-col gap-5">
     <section class="flex flex-row gap-5 place-content-center">
         <button class="p-2 hover:text-red-500 focus:text-red-500 {viewState === 'users' ? 'border-b' : 'opacity-95'}"
         onclick={() => viewState = 'users'}

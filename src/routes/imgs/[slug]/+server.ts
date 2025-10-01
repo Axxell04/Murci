@@ -8,7 +8,7 @@ export const GET: RequestHandler = async ({ params }) => {
     
     try {
         const data = await readFile(filePath);
-        return new Response(data, { headers: { 'Content-Type': 'image/webp' } });
+        return new Response(data as BodyInit, { headers: { 'Content-Type': 'image/webp' } });
     } catch {
         return new Response('Archivo no encontrado', { status: 404 });
     }

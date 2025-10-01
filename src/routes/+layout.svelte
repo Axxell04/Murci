@@ -92,6 +92,13 @@
 					<Icon icon="mdi:badge-account" class="text-3xl" />
 				</a>
 			</li>
+			<li class="flex flex-row gap-2">
+				<a href="/admin/backup" class="px-1 hover:text-red-400 focus:text-red-400"
+				onfocus={(e) => cancelFocus(e)}
+				>
+					<Icon icon="material-symbols:backup-outline-rounded" class="text-4xl" />
+				</a>
+			</li>
 			{/if}
 			<li class="flex flex-row gap-2 relative h-full">
 				<button bind:this={btnCardSelectNav} class="px-1 hover:text-red-400 focus:text-red-400 h-full w-full"

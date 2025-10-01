@@ -4,7 +4,7 @@ node_modules
 # Ignorar todos los archivos dentro del directorio imgs
 uploads/imgs/*
 
-backups/
+/backups
 
 # No ignorar el directorio imgs (permitir que Git lo rastree)
 !uploads/imgs/
