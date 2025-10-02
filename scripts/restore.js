@@ -14,18 +14,7 @@ if (!process.env.DATABASE_URL) {
 const client = createClient({ url: process.env.DATABASE_URL })
 const db = drizzle(client);
 
-function reviveDates (obj) {
-    for (const key in obj) {
-        const value = obj[key];
-        if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}T/.test(value)) {
-            obj[key] = new Date(value);
-        }
-    }
-    return obj;
-}
-
 function reviver (key, value) {
-    // console.log(`${typeof value}: ${value} | ${/^\d{4}-\d{2}-\d{2}T/.test(value)}`);
     if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}T/.test(value)) {
         return new Date(value);
     };
@@ -51,8 +40,8 @@ async function restore () {
         if (data.order.length) await db.insert(table.order).values(data.order);
         if (data.user_token.length) await db.insert(table.user_token).values(data.user_token);
     } catch (error) {
-        console.log(error)
-        // throw new Error(`Error al realizar la restauración de datos: ${error}`);
+        // console.log(error)
+        throw new Error(`Error al realizar la restauración de datos: ${error}`);
     }
 }
 

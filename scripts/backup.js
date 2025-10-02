@@ -3,6 +3,7 @@ import { config } from "dotenv";
 import * as table from "../src/lib/server/db/schema.js";
 import { drizzle } from "drizzle-orm/libsql";
 import fs from "fs";
+import { eq, not } from "drizzle-orm";
 
 // Cargar variables de entorno desde el archivo .env
 config();
@@ -14,18 +15,9 @@ if (!process.env.DATABASE_URL) {
 const client = createClient({ url: process.env.DATABASE_URL })
 const db = drizzle(client);
 
-function replacer (key, value) {
-    // console.log(`${typeof value}: ${value} | ${/^\d{4}-\d{2}-\d{2}T/.test(value)}`);
-    // if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}T/.test(value)) {
-    //     const date = new Date(value);
-    //     return date.getTime();
-    // };
-    return value;
-}
-
 async function backup () {
     const data = {
-        user: await db.select().from(table.user),
+        user: await db.select().from(table.user).where(not(eq(table.user.admin, true))),
         catalog: await db.select().from(table.catalog),
         contact: await db.select().from(table.contact),
         cost: await db.select().from(table.cost),
@@ -41,8 +33,7 @@ async function backup () {
     if (!fs.existsSync("backups/")) {
         fs.mkdirSync("backups/");
     }
-    fs.writeFileSync("backups/data.json", JSON.stringify(data, replacer, 2))
-    // console.log(data);
+    fs.writeFileSync("backups/data.json", JSON.stringify(data, null, 2))
 }
 
 backup();

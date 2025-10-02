@@ -4,10 +4,9 @@ import { json } from "@sveltejs/kit";
 import path from "path";
 import fs from "fs";
 
-export const GET: RequestHandler = async () => {
+import AdminZip from "adm-zip";
 
-    const data = { name: "Axel", project: "Murci" };
-    // const json = JSON.stringify(data, null, 2);
+export const GET: RequestHandler = async () => {
 
     const scriptPath = path.resolve("scripts/backup.js");
 
@@ -22,20 +21,21 @@ export const GET: RequestHandler = async () => {
         });
         process.on('close', (code) => {
             console.log(`Script finalizado con código ${code}`);
-            const backup = fs.readFileSync("backups/data.json", "utf-8");
-            resolve(new Response (backup, {
+            // const backup = fs.readFileSync("backups/data.json", "utf-8");
+            const backup = compressFolder();
+            resolve(new Response (backup as BodyInit, {
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Content-Disposition': `attachment; filename="MurciBackup-${new Date().toISOString()}.json"`
+                    'Content-Type': 'application/zip',
+                    'Content-Disposition': `attachment; filename="MurciBackup-${new Date().toISOString()}.zip"`
                 }
             }));
         })
     })
-
-    // return new Response(json, {
-    //     headers: {
-    //         'Content-Type': 'application/json',
-    //         'Content-Disposition': `attachment; filename="MurciBackup-${new Date().toISOString()}.json"`
-    //     }
-    // })
 };
+
+function compressFolder () {
+    const zip = new AdminZip();
+    zip.addLocalFolder("backups", "backup");
+    zip.addLocalFolder("uploads/imgs", "backup/imgs");
+    return zip.toBuffer();
+}
