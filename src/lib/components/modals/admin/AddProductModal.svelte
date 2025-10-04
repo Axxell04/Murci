@@ -21,7 +21,7 @@
     let price = $state("");
     let imgsList: File[] = $state([]);
 
-    let inputImgs: HTMLInputElement | undefined;
+    let inputImgs: HTMLInputElement | undefined = $state();
 
 
     function cancelFocus (e: FocusEvent) {

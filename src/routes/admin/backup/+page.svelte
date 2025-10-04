@@ -36,6 +36,8 @@
     async function sendFiles () {
         if (!filesOfBackup.length || loading) return;
         loading = true;
+        const resReset = await fetch("/admin/backup/upload/reset_data");
+        if (!(await resReset.json()).success) return;
         for (const file of filesOfBackup) {
             const formData = new FormData();
             formData.append("file", file);
@@ -52,9 +54,15 @@
             }
         }
         loading = false;
+        const resRestore = await fetch("/admin/backup/upload/restore_data");
+        const jsonRestore = await resRestore.json();
+        if (jsonRestore.success) {
+            resMessage = "Respaldo subído con éxito"
+        } else {
+            resMessage = "A ocurrido un error"
+        }
         filesOfBackup = [];
         if (inputBackupFile) inputBackupFile.value = "";
-        resMessage = "Respaldo subído con éxito"
     }
 
     $effect(() => {
