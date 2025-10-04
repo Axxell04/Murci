@@ -13,7 +13,7 @@ type GetProductsOptions = {
     catalogId?: string;
 }
 
-export async function createProduct(name: string, price: number, imgs: FileList, catalogId?: string) {
+export async function createProduct(name: string, price: number, catalogId?: string) {
     const productId = generateId();
     const product: table.Product = {
         id: productId,
@@ -23,30 +23,36 @@ export async function createProduct(name: string, price: number, imgs: FileList,
     }
     
     await db.insert(table.product).values(product).execute();
-    // console.log("LastInsertRowid: " + res.lastInsertRowid);
-    
-    const uploadsDir = path.join(process.cwd(), 'uploads', 'imgs');
-    await checkDir(uploadsDir);
 
+    // if (imgs.length > 0) {
+    //     for (const img of Array.from(imgs)) {
+    //         const imgId = generateId();
+    //         const imgName = `${generateRandomName()}.webp`;
+    //         const imgURL = await handleImage(img, imgName);
 
-    if (imgs.length > 0) {
-        for (const img of Array.from(imgs)) {
-            const imgId = generateId();
-            const imgName = `${generateRandomName()}.webp`;
-            const imgURL = await handleImage(img, imgName);
-
-            await db.insert(table.img).values({
-                id: imgId,
-                url: imgURL,
-                productId: productId
-            }).execute();
-        }
-    }
-    // console.log('CatalogID: ', catalogId)
+    //         await db.insert(table.img).values({
+    //             id: imgId,
+    //             url: imgURL,
+    //             productId: productId
+    //         }).execute();
+    //     }
+    // }
     if (catalogId) {
         await addProductToCatalog(productId, catalogId);
     }
+    return productId;
+}
 
+export async function bindImg (productId: string, img: File) {    
+    const imgId = generateId();
+    const imgName = `${generateRandomName()}.webp`;
+    const imgURL = await handleImage(img, imgName);
+
+    await db.insert(table.img).values({
+        id: imgId,
+        url: imgURL,
+        productId: productId
+    }).execute();
 }
 
 export async function getProducts (options: GetProductsOptions = {}) {
@@ -193,11 +199,9 @@ function generateRandomName () {
     return name;
 }
 
-async function handleImage (img: File, imgName: string) {
-    // console.log(process.cwd())
-    // console.log(await fs.readdir(process.cwd()))
-
+async function handleImage (img: File, imgName: string) {    
     const uploadsDir = path.join(process.cwd(), 'uploads', 'imgs');
+    await checkDir(uploadsDir);
 
     const buffer = await img.arrayBuffer();
     const filePath = path.join(uploadsDir, imgName);

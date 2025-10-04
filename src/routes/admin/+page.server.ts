@@ -170,7 +170,7 @@ export const actions: Actions = {
         }
         
         try {
-            await createProduct(name, price, imgs, catalogId ?? undefined);
+            await createProduct(name, price, catalogId ?? undefined);
 
         } catch (error) {
             console.log(error);
