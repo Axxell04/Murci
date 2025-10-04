@@ -4,6 +4,7 @@ import fs from "fs";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { fail } from "@sveltejs/kit";
+import { arrayBuffer } from "stream/consumers";
 
 const execAync = promisify(exec);
 
@@ -46,5 +47,21 @@ export const actions: Actions = {
             return fail(500, { message: 'Internal server error' });                        
         }
         
+    },
+    upload_files: async (event) => {
+        const formData = await event.request.formData();
+        const file = formData.get("file") as unknown as File;
+        if (!file) return;
+        console.log(file)
+        fs.mkdirSync("backup/", { recursive: true });
+        fs.mkdirSync("uploads/imgs/", { recursive: true });
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        if (file.type === "application/json") fs.writeFileSync(`backup/${file.name}`, buffer);
+        // if (file.type === "image/webp") fs.writeFileSync(`uploads/imgs/${file.name}`, buffer)
+        return {
+            success: true
+        }
     }
+
 };

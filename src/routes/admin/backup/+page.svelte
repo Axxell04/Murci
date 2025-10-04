@@ -1,11 +1,61 @@
 <script lang="ts">
-	import { enhance } from "$app/forms";
-	import BackupCard from "$lib/components/BackupCard.svelte";
 	import Icon from "@iconify/svelte";
 	import { fade, scale } from "svelte/transition";
+    import JSZip from "jszip";
 
     let resMessage = $state("");
     let loading = $state(false);
+
+    let filesOfBackup: File[] = $state([]);    
+
+    let inputBackupFile: HTMLInputElement | undefined;
+
+    async function handleFile (e: Event) {
+        const target = e.target as HTMLInputElement;
+        const f = target.files?.[0];
+        if (!f) return;
+
+        const arrayBuffer = await f.arrayBuffer();
+        const zip = await JSZip.loadAsync(arrayBuffer);
+
+        const mapTypes = {
+            webp: "image/webp",
+            json: "application/json",
+            "": "application/octet-stream"
+        }
+
+        for (const file of Object.values(zip.files)) {            
+            const content = await file.async("blob");
+            const name = file.name.split('/').pop() as string;
+            const ext = file.name.split('.').pop()?.toLowerCase();
+            const type = mapTypes[ext === "webp" || ext === "json" ? ext : ""]
+            filesOfBackup.push(new File([content], name, { type}));
+        }
+    }
+
+    async function sendFiles () {
+        if (!filesOfBackup.length || loading) return;
+        loading = true;
+        for (const file of filesOfBackup) {
+            const formData = new FormData();
+            formData.append("file", file);
+            const res = await fetch("/admin/backup/upload", {
+                method: "POST",
+                body: formData
+            })
+            const data = await res.json();
+            console.log(data);
+            if (!data.success) {
+                resMessage = "A ocurrido un error";
+                loading = false;
+                return;
+            }
+        }
+        loading = false;
+        filesOfBackup = [];
+        if (inputBackupFile) inputBackupFile.value = "";
+        resMessage = "Respaldo subído con éxito"
+    }
 
     $effect(() => {
         if (loading) {
@@ -36,37 +86,18 @@
                 <Icon icon="clarity:backup-solid" class="text-3xl" />
             </button>
         </form>
-        <form action="?/upload" method="post" class="p-3 bg-stone-800 rounded-md flex flex-col items-center gap-2"
-            enctype="multipart/form-data"
-            use:enhance={({formElement}) => {
-                loading = true;
-                return async ({ result }) => {
-                    loading = false;
-                    if (result.type === "success") {
-                        resMessage = "Respaldo subido con éxito";
-                        formElement.reset();
-                    } else if (result.type === "failure") {
-                        resMessage = "No fue posible subir el respaldo";
-                    }
-                }
-            }}
-        >
-            <input type="file" name="backup" accept=".zip" required>
-            <div class="flex flex-row gap-2">
-                <span>
-                    Forzar restauración
-                </span>
-                <input type="checkbox" name="force" class="accent-red-500">
-            </div>
+        <div class="p-3 bg-stone-800 rounded-md flex flex-col items-center gap-2">
+            <input type="file" name="backup" accept=".zip" required onchange={handleFile} bind:this={inputBackupFile} >            
             <button class="border flex flex-row gap-2 px-3 py-1 items-center rounded-md hover:text-red-500 active::text-red-500" 
                 disabled={loading}
+                onclick={sendFiles}
             >
                 <span>
                     Subir
                 </span>
                 <Icon icon="clarity:backup-restore-solid" class="text-3xl" />
             </button>
-        </form>
+        </div>
         {#if loading}
         <div transition:scale={{duration: 200}} class="w-10 h-10 border-4 border-red-400 border-t-transparent rounded-full animate-spin"></div>
             
