@@ -2,7 +2,11 @@ import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 import fs from "fs";
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
+    if (!locals.user) {
+        return json({ success: false, message: "Acción no autorizada" });
+    }
+    
     const formData = await request.formData();
     const file = formData.get("file") as unknown as File;
     if (!file) return json({ success: false, message: "Parámetro archivo no recivido" });

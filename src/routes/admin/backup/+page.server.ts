@@ -1,10 +1,16 @@
-import type { Actions } from "./$types";
+import type { Actions, PageServerLoad } from "./$types";
 import AdmZip from "adm-zip";
 import fs from "fs";
 import { exec } from "child_process";
 import { promisify } from "util";
-import { fail } from "@sveltejs/kit";
+import { fail, redirect } from "@sveltejs/kit";
 import { arrayBuffer } from "stream/consumers";
+
+export const load: PageServerLoad = async (event) => {
+    if (!event.locals.user) {
+        return redirect(302, "/login")
+    }
+};
 
 const execAync = promisify(exec);
 

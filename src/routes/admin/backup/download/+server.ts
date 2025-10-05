@@ -6,8 +6,10 @@ import fs from "fs";
 
 import AdminZip from "adm-zip";
 
-export const GET: RequestHandler = async () => {
-
+export const GET: RequestHandler = async ({ locals }) => {
+    if (!locals.user) {
+        return json({ success: false, message: "Acción no autorizada" });
+    }
     const scriptPath = path.resolve("scripts/backup.js");
 
     return new Promise ((resolve) => {
