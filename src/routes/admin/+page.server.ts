@@ -38,8 +38,8 @@ export const actions: Actions = {
         const pagination = await getProducts({limit: 9999999});
         const paginationOfCatalog = await getProducts({limit: 999999, catalogId})
 
-        let totalList: ProductComplete[] = pagination.products;
-        let productsInCatalog: ProductComplete[] = paginationOfCatalog.products;
+        const totalList: ProductComplete[] = pagination.products;
+        const productsInCatalog: ProductComplete[] = paginationOfCatalog.products;
 
         const products = totalList.filter((p) => {
             const inList = productsInCatalog.some(product => product.product.id === p.product.id)
@@ -157,7 +157,7 @@ export const actions: Actions = {
         const formData = await event.request.formData();
         const name = formData.get('name');
         const price = formData.get('price');
-        const imgs = formData.getAll('imgs') as unknown as FileList;
+        // const imgs = formData.getAll('imgs') as unknown as FileList;
 
         const catalogId = event.locals.catalogId;
 
@@ -230,6 +230,12 @@ export const actions: Actions = {
 
         try {
             // await updateProduct(product_id, name, price, imgs, finalListDelete)
+            await updateProduct({
+                product_id,
+                name,
+                price,
+                imgsDelete: finalListDelete
+            })
         } catch (error) {
             console.log(error);
             return fail(500, { message: 'Internal server error' })
