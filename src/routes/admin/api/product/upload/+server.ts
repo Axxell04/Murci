@@ -4,6 +4,10 @@ import fs from "fs";
 import { bindImg, createProduct, getProducts } from "$lib/server/product";
 
 export const POST: RequestHandler = async ({ request, locals }) => {
+    if (!locals.user) {
+        return json({ success: false, message: "Acción no autorizada" });
+    }
+
     const formData = await request.formData();
     const phase = formData.get("phase") as string;    
     const catalogId = locals.catalogId;
@@ -22,7 +26,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         }
     } else if (phase === "2") {
         const img = formData.get("img") as File | null;
-        const index = formData.get("index") as string;
         const productId = formData.get("product-id") as string;
         if (!img) return json({ success: false, message: "Parámetro 'img' no encontrado" });
         await bindImg(productId, img);

@@ -69,7 +69,6 @@
             const formDataPhase2 = new FormData()
             formDataPhase2.append("phase", "2");
             formDataPhase2.append("img", img);
-            formDataPhase2.append("index", imgsList.indexOf(img).toString());
             formDataPhase2.append("product-id", productId);
             const resPhase2 = await fetch("/admin/api/product/upload", {
                 method: "POST",

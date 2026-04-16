@@ -8,7 +8,8 @@
 	import Icon from "@iconify/svelte";
 	import ImgsProductModal from "../ImgsProductModal.svelte";
 	import ImgsEditProductModal from "./ImgsEditProductModal.svelte";
-	import { onDestroy } from "svelte";
+	import { onDestroy, onMount } from "svelte";
+    import imageCompression from "browser-image-compression";
 
     interface Props {
         setProductPagination: (newProductPagination: ProductPagination) => void
@@ -21,6 +22,28 @@
 
     // Form
     let formMessage = $state('')
+    let name = $state("");
+    let price = $state("");
+    let imgsList: File[] = $state([]);
+
+    // onMount(() => {
+    //     if (!productSelected) return;
+    //     name = productSelected.product.name;
+    //     price = productSelected.product.price.toString();
+    // })
+
+    $effect(() => {
+        editProductModalIsVisible;
+        if (productSelected) {
+            name = productSelected.product.name
+            price = productSelected.product.price.toString()
+            imgsList = []
+        }
+    })
+
+    $inspect(productSelected);
+
+    let inputImgs: HTMLInputElement | undefined = $state();
 
     let listDelete: number[] = $state([]);
 
@@ -48,7 +71,8 @@
     }
 
     function clearList () {
-        listDelete = []
+        listDelete = [];
+        imgsList= [];
     }
 
     function cancelFocus (e: FocusEvent) {
@@ -58,6 +82,75 @@
                 target.blur();
             }, 200)
         }
+    }
+
+    function handleName (e: Event) {
+        const target = e.target as HTMLInputElement;
+        name = target.value;
+    }
+
+    function handlePrice (e: Event) {
+        const target = e.target as HTMLInputElement;
+        price = target.value;
+    }
+
+    async function compress (file: File) {
+        const compressedFile = await imageCompression(file, {
+            maxWidthOrHeight: 800,
+            maxSizeMB: 0.5,
+            useWebWorker: true
+        });
+        return compressedFile;
+    }
+
+    async function handleFile (e: Event) {
+        const target = e.target as HTMLInputElement;
+        const files = target.files;
+        if (!files || !files.length) return;
+        imgsList = [];
+        for (const file of files) {
+            imgsList.push(await compress(file));
+        }
+    }
+
+    async function sendUpdate () {
+        const formDataPhase1 = new FormData();
+        formDataPhase1.append("phase", "1");
+        formDataPhase1.append("product_id", productSelected?.product.id as string);
+        formDataPhase1.append("name", name as string);
+        formDataPhase1.append("price", price as string);
+        const resPhase1 = await fetch("/admin/api/product/update", {
+            method: "POST",
+            body: formDataPhase1
+        });
+        const jsonPhase1 = await resPhase1.json();
+        if (!jsonPhase1.success) return;
+        for (const img of imgsList) {
+            const formDataPhase2 = new FormData();
+            formDataPhase2.append("phase", "2");
+            formDataPhase2.append("img", img);
+            formDataPhase2.append("product_id", productSelected?.product.id as string);
+            const resPhase2 = await fetch("/admin/api/product/update", {
+                method: "POST",
+                body: formDataPhase2
+            });
+            const jsonPhase2 = await resPhase2.json();
+            if (!jsonPhase2.success) return;
+        }
+        const formDataPhase3 = new FormData();
+        formDataPhase3.append("phase", "3");        
+        formDataPhase3.append("product_id", productSelected?.product.id as string);
+        formDataPhase3.append("list_delete", JSON.stringify(listDeleteToForm));
+        const resPhase3 = await fetch("/admin/api/product/update", {
+            method: "POST",
+            body: formDataPhase3
+        });
+        const jsonPhase3 = await resPhase3.json();
+        if (!jsonPhase3.success) return;
+        setProductPagination(jsonPhase3.pagination as ProductPagination);
+        if (inputImgs) inputImgs.value = "";
+        toggleEditProductModalIsVisible(false);
+        clearList();
     }
 
     $effect(() => {
@@ -108,6 +201,7 @@
                             <input type="text" name="name" id="name" required autocomplete="off"
                             class="border border-red-400 rounded-md px-1 outline-none max-w-full" 
                             value={productSelected.product.name}
+                            oninput={handleName}
                             />                               
                             {/if}
                         </span>
@@ -119,6 +213,7 @@
                             <input type="number" name="price" id="price" required step="0.01"
                             class="border border-red-400 rounded-md px-1 outline-none max-w-full" 
                             value={productSelected.product.price}
+                            oninput={handlePrice}
                             />                             
                             {/if}
                         </span>
@@ -128,6 +223,8 @@
                         <input type="file" aria-labelledby="imagenes" name="imgs" id="imgs" accept="image/*" multiple 
                         class="border border-red-400 rounded-md px-1 outline-none max-w-full" 
                         style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;"
+                        onchange={handleFile}
+                        bind:this={inputImgs}
                         />
                         <button type="button" class="border p-1 rounded-md cursor-pointer hover:text-red-500 focus:text-red-500" 
                         onclick={()=>toggleImgsEditProductModalIsVisible(true)}
@@ -140,8 +237,11 @@
                         <input type="text" hidden name="list_delete" 
                         value={JSON.stringify(listDeleteToForm)}
                         >
-                        <button type="submit" class="border hover:text-red-500 focus:text-red-500 rounded-md p-2 cursor-pointer"
-                        onfocus={(e) => cancelFocus(e)}
+                        <button type="button" class="border hover:text-red-500 focus:text-red-500 rounded-md p-2 cursor-pointer"
+                        onfocus={(e) => {
+                            sendUpdate();
+                            cancelFocus(e);
+                            }}
                         >
                             Editar
                         </button>

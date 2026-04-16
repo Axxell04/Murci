@@ -229,7 +229,7 @@ export const actions: Actions = {
         }
 
         try {
-            await updateProduct(product_id, name, price, imgs, finalListDelete)
+            // await updateProduct(product_id, name, price, imgs, finalListDelete)
         } catch (error) {
             console.log(error);
             return fail(500, { message: 'Internal server error' })

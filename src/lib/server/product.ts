@@ -57,7 +57,7 @@ export async function bindImg (productId: string, img: File) {
 
 export async function getProducts (options: GetProductsOptions = {}) {
     // console.log('CatalogID: ', catalogId)
-    let { page = 1, limit = 4, search, catalogId } = options;
+    const { page = 1, limit = 4, search, catalogId } = options;
     const offset = (page - 1) * limit;
     let products: table.Product[];
     
@@ -127,25 +127,16 @@ export async function getProducts (options: GetProductsOptions = {}) {
     };
 }
 
-export async function updateProduct (product_id: string, name: string, price: number, imgs?: FileList, imgsDelete?: string[]) {
-    await db.update(table.product).set({name: name, price: price}).where(eq(table.product.id, product_id)).execute();
-    if (typeof imgs !== 'undefined') {
-        // console.log(imgs);
-        if (imgs.length > 0) {
-            for (const img of Array.from(imgs)) {
-                if (img.name && img.size) {
-                    const imgId = generateId();
-                    const imgName = `${generateRandomName()}.webp`;
-                    const imgURL = await handleImage(img, imgName);
-                    await db.insert(table.img).values({
-                        id: imgId,
-                        url: imgURL,
-                        productId: product_id
-                    }).execute();
-                }
-            }
-        }
-    }
+type UpdateProductOptions = {
+    product_id: string;
+    name?: string;
+    price?: number;
+    imgsDelete?: string[];
+}
+
+export async function updateProduct (options: UpdateProductOptions) {
+    const { product_id, name, price, imgsDelete } = options;
+    if (typeof name !== "undefined" && typeof price !== "undefined") await db.update(table.product).set({name: name, price: price}).where(eq(table.product.id, product_id)).execute();
     if (typeof imgsDelete !== 'undefined') {
         if (imgsDelete.length > 0) {
             for (const imgId of imgsDelete) {
@@ -172,6 +163,7 @@ export async function getImgs (productId: string) {
 // Complementary Functions
 
 export async function deleteImg (id: string, img?: table.Img) {
+    console.log(img);
     if (typeof img === 'undefined') {
         const imgs = await db.select().from(table.img).where(eq(table.img.id, id)).execute();
         if (imgs.length === 0) { return };
