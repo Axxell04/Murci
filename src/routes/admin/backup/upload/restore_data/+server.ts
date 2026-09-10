@@ -5,7 +5,7 @@ import { json } from "@sveltejs/kit";
 
 const execAsync = promisify(exec);
 
-export const GET: RequestHandler = async ({ request, locals }) => {
+export const POST: RequestHandler = async ({ locals }) => {
     if (!locals.user) {
         return json({ success: false, message: "Acción no autorizada" });
     }
@@ -14,7 +14,6 @@ export const GET: RequestHandler = async ({ request, locals }) => {
         await execAsync("node scripts/restore.js");
         return json({ success: true });
     } catch (error) {
-        return json({ success: false, message: "Error al ejecutar el comando" });
+        return json({ success: false, message: "Error al restaurar los datos" });
     }
-
 };

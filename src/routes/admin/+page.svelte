@@ -319,7 +319,7 @@
 
         </div>
 
-        <div class="flex flex-wrap grow justify-center p-2 gap-3">
+        <div class="flex flex-wrap grow justify-center p-2 gap-5">
             {#each products as product}
                 <ProductCard {product} {productSelected} {selectThisProduct} {toggleDeleteProductModalIsVisible} {toggleEditProductModalIsVisible} />
             {/each}

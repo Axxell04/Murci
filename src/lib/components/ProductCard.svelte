@@ -3,6 +3,7 @@
 	import type { Img, Product, ProductComplete } from "$lib/interfaces/product";
 	import Icon from "@iconify/svelte";
 	import { fade, scale } from "svelte/transition";
+	import { onMount, onDestroy } from "svelte";
 
     interface Props {
         product: ProductComplete
@@ -41,27 +42,82 @@
         }
     }
 
+    // Auto-carousel
+    let imgContainer: HTMLDivElement | undefined = $state();
+    let imgIndex = $state(0);
+    let isHovered = $state(false);
+    let intervalId: ReturnType<typeof setInterval> | undefined;
+
+    const CARD_WIDTH = 288; // w-72 = 18rem = 288px
+    const INTERVAL_MS = 3000;
+
+    function scrollToImage(index: number) {
+        if (!imgContainer) return;
+        imgContainer.scrollTo({ left: index * CARD_WIDTH, behavior: 'smooth' });
+    }
+
+    function nextImage() {
+        if (isHovered) return;
+        const total = product.imgs.length;
+        if (total <= 1) return;
+        imgIndex = (imgIndex + 1) % total;
+        scrollToImage(imgIndex);
+    }
+
+    function startCarousel() {
+        stopCarousel();
+        if (product.imgs.length > 1) {
+            intervalId = setInterval(nextImage, INTERVAL_MS);
+        }
+    }
+
+    function stopCarousel() {
+        if (intervalId) {
+            clearInterval(intervalId);
+            intervalId = undefined;
+        }
+    }
+
+    onMount(() => {
+        startCarousel();
+    });
+
+    onDestroy(() => {
+        stopCarousel();
+    });
+
 </script>
 
 <div class="group/card relative w-72 h-80 flex flex-col rounded-xl overflow-hidden cursor-pointer card outline-none"
     onclick={()=>selectThisProduct(product)}
+    onmouseenter={()=>{ isHovered = true; }}
+    onmouseleave={()=>{ isHovered = false; }}
     role="button"
     tabindex="0"
     onkeydown={()=>{}}
 >
     <!-- Imagen: ocupa toda la card -->
-    <div class="img-container absolute inset-0 flex flex-row overflow-y-hidden overflow-x-auto snap-x snap-mandatory scroll-smooth">
+    <div bind:this={imgContainer} class="img-container absolute inset-0 flex flex-row overflow-y-hidden overflow-x-hidden snap-x snap-mandatory scroll-smooth">
         {#each product.imgs as imgProduct }
         <img src={imgProduct.url} alt={imgProduct.id} class="object-cover flex-shrink-0 snap-center w-72 h-full" loading="lazy">            
         {/each}
     </div>
 
+    <!-- Indicadores de imagen -->
+    {#if product.imgs.length > 1}
+    <div class="absolute top-2 left-0 right-0 flex flex-row justify-center gap-1.5 z-10 pointer-events-none">
+        {#each product.imgs as _, i}
+        <span class="w-1.5 h-1.5 rounded-full transition-all duration-300 {i === imgIndex ? 'bg-red-400 scale-125' : 'bg-stone-400/60'}"></span>
+        {/each}
+    </div>
+    {/if}
+
     <!-- Degradado inferior con nombre y precio -->
-    <div class="absolute bottom-0 inset-x-0 flex flex-col px-3 pb-3 pt-8 bg-gradient-to-t from-stone-900/95 via-stone-900/60 to-transparent pointer-events-none">
-        <p class="text-red-400 font-extrabold text-lg leading-tight drop-shadow-lg">
+    <div class="absolute bottom-0 inset-x-0 flex flex-row place-content-between px-3 pb-1 pt-10 bg-gradient-to-t from-stone-900/95 via-stone-900/70 to-transparent pointer-events-none">
+        <p class="text-red-400 font-extrabold text-lg text-shadow-2xs leading-tight drop-shadow-lg">
             {product.product.name ?? 'Camisa'}
         </p>
-        <p class="font-light text-red-300 text-base drop-shadow-lg">
+        <p class="font-light text-red-300 text-lg drop-shadow-lg">
             {`${product.product.price.toFixed(2)} $`}
         </p>
     </div>
@@ -88,36 +144,20 @@
 <style>
     .card {
         background: #1c1917;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(248, 113, 113, 0.05);
+        transition: box-shadow 0.3s ease, transform 0.3s ease;
     }
 
     .card:hover {
-        box-shadow: oklch(70.4% 0.191 22.216) 0px 0px 8px;
+        box-shadow: 0 8px 30px rgba(248, 113, 113, 0.15), 0 0 0 1px rgba(248, 113, 113, 0.2);
     }
 
     .img-container {
-        --sb-track-color: #292524;
-        --sb-thumb-color: #f87171;
-        --sb-size: 6px;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
     }
 
     .img-container::-webkit-scrollbar {
-        height: var(--sb-size);
-    }
-
-    .img-container::-webkit-scrollbar-track {
-        background: var(--sb-track-color);
-        border-radius: 10px;
-    }
-
-    .img-container::-webkit-scrollbar-thumb {
-        background: var(--sb-thumb-color);
-        border-radius: 10px;
-    }
-
-    @supports not selector(::-webkit-scrollbar) {
-        .img-container {
-            scrollbar-color: var(--sb-thumb-color)
-                            var(--sb-track-color);
-        }
+        display: none;
     }
 </style>

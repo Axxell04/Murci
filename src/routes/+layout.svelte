@@ -98,6 +98,8 @@
 							<Icon icon="mdi:badge-account" class="text-3xl" />
 						</a>
 					</li>
+					<!-- Backup oculto: pendiente de rediseno para PostgreSQL + Cloudinary -->
+					<!--
 					<li class="flex flex-row gap-2">
 						<a
 						href="/admin/backup"
@@ -107,6 +109,7 @@
 							<Icon icon="material-symbols:backup-outline-rounded" class="text-4xl" />
 						</a>
 					</li>
+					-->
 				{/if}
 				<li class="relative flex h-full flex-row gap-2">
 					<button

@@ -30,7 +30,6 @@ export async function validateSessionToken(token: string) {
 	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
 	const [result] = await db
 		.select({
-			// Adjust user table here to tweak returned data
 			user: { id: table.user.id, username: table.user.username, admin: table.user.admin },
 			session: table.session
 		})
@@ -67,15 +66,25 @@ export async function invalidateSession(sessionId: string) {
 	await db.delete(table.session).where(eq(table.session.id, sessionId));
 }
 
+export async function invalidateAllUserSessions(userId: string) {
+	await db.delete(table.session).where(eq(table.session.userId, userId));
+}
+
 export function setSessionTokenCookie(event: RequestEvent, token: string, expiresAt: Date) {
 	event.cookies.set(sessionCookieName, token, {
 		expires: expiresAt,
-		path: '/'
+		path: '/',
+		httpOnly: true,
+		sameSite: 'lax',
+		secure: event.url.protocol === 'https:'
 	});
 }
 
 export function deleteSessionTokenCookie(event: RequestEvent) {
 	event.cookies.delete(sessionCookieName, {
-		path: '/'
+		path: '/',
+		httpOnly: true,
+		sameSite: 'lax',
+		secure: event.url.protocol === 'https:'
 	});
 }

@@ -32,7 +32,12 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 
 	const cart = event.cookies.get('cart');
 	if (cart) {
-		event.locals.cart = JSON.parse(cart);
+		try {
+			event.locals.cart = JSON.parse(cart);
+		} catch {
+			event.locals.cart = [];
+			event.cookies.delete('cart', { path: '/' });
+		}
 	} else {
 		event.locals.cart = [];
 	}
