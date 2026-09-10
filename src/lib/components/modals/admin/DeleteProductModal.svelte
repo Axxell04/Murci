@@ -109,7 +109,7 @@
                     </div>
                     {/if}
                     <div role="button" tabindex="0" onkeydown={()=>{}}
-                    class="absolute top-2 right-2 hover:text-red-500 cursor-pointer" onclick="{() => toggleDeleteProductModalIsVisible(false)}">
+                    class="absolute top-2 right-2 hover:text-red-500 cursor-pointer" onclick={()=>toggleDeleteProductModalIsVisible(false)}>
                         <Icon icon="material-symbols:close-rounded" class="text-3xl" />
                     </div>
                 </form>

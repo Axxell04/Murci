@@ -46,6 +46,10 @@
         productSelected = product;
     }
 
+    function setProductSelected (product: ProductComplete) {
+        productSelected = product;
+    }
+
     function setProductPagination (newProductPagination: ProductPagination) {
         productPagination = newProductPagination;
     }
@@ -139,7 +143,7 @@
 
 <div in:fade class="flex flex-col gap-2 px-5 py-5">
     <section class="flex flex-col gap-3 ">
-        <div class="sticky -top-1 z-10 bg-stone-900/95 backdrop-blur-md place-content-around flex flex-wrap p-3 gap-2 place-items-center">
+        <div class="sticky -top-1 z-40 bg-stone-900/95 backdrop-blur-md place-content-around flex flex-wrap p-3 gap-2 place-items-center">
             <div class="flex flex-row gap-2 place-items-center">
                 <button class="flex flex-row gap-1 border rounded-md p-1 hover:text-red-500 focus:text-red-500 cursor-pointer place-items-center"
                 onclick={() => {
@@ -323,6 +327,6 @@
     </section>
     <AddProductModal {setProductPagination} {toggleAddProductModalIsVisible} {addProductModalIsVisible} />
     <DeleteProductModal {setProductPagination} {catalogId} {toggleDeleteProductModalIsVisible} {deleteProductModalIsVisible} {productSelected} />
-    <EditProductModal {setProductPagination} {toggleEditProductModalIsVisible} {editProductModalIsVisible} {productSelected} />
+    <EditProductModal {setProductPagination} {setProductSelected} {toggleEditProductModalIsVisible} {editProductModalIsVisible} {productSelected} />
     <AddProductToCatalogModal {setProductPagination} {catalogId} {toggleAddProductToCatalogModalIsVisible} {addProductToCatalogModalIsVisible} />
 </div>

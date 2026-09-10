@@ -1,11 +1,9 @@
 <script lang="ts">
 
-	import { enhance } from "$app/forms";
 	import type { ProductPagination } from "$lib/interfaces/product";
 	import { fade, scale } from "svelte/transition";
 	import ContainerModal from "../ContainerModal.svelte";
 	import Icon from "@iconify/svelte";
-    import pica from "pica";
     import imageComression from "browser-image-compression";
 
     interface Props {
@@ -20,9 +18,9 @@
     let name = $state("");
     let price = $state("");
     let imgsList: File[] = $state([]);
+    let uploading = $state(false);
 
     let inputImgs: HTMLInputElement | undefined = $state();
-
 
     function cancelFocus (e: FocusEvent) {
         const target = e.target as HTMLButtonElement;
@@ -42,73 +40,120 @@
         return compressedFile;
     }
 
+    async function convertToWebP (file: File): Promise<File> {
+        const bitmap = await createImageBitmap(file);
+        const canvas = document.createElement('canvas');
+        canvas.width = bitmap.width;
+        canvas.height = bitmap.height;
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(bitmap, 0, 0);
+        bitmap.close();
+        return new Promise((resolve, reject) => {
+            canvas.toBlob(
+                (blob) => {
+                    if (!blob) return reject(new Error('WebP conversion failed'));
+                    resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.webp'), { type: 'image/webp' }));
+                },
+                'image/webp',
+                0.85
+            );
+        });
+    }
+
     async function handleFile (e: Event) {
         const target = e.target as HTMLInputElement;
         const files = target.files;
         if (!files || !files.length) return;
         imgsList = [];
         for (const file of files) {
-            imgsList.push(await compress(file));
+            const compressed = await compress(file);
+            imgsList.push(await convertToWebP(compressed));
         }        
+    }
+
+    async function uploadToCloudinary (file: File): Promise<string> {
+        const sigRes = await fetch("/api/cloudinary/signature");
+        if (!sigRes.ok) throw new Error("Failed to get upload signature");
+        const sig = await sigRes.json();
+
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("api_key", sig.api_key);
+        formData.append("timestamp", sig.timestamp);
+        formData.append("folder", sig.folder);
+        formData.append("signature", sig.signature);
+
+        const uploadRes = await fetch(
+            `https://api.cloudinary.com/v1_1/${sig.cloud_name}/image/upload`,
+            { method: "POST", body: formData }
+        );
+        if (!uploadRes.ok) throw new Error("Cloudinary upload failed");
+        const data = await uploadRes.json();
+        return data.secure_url;
     }
 
     async function sendProduct () {
         if (!name || !price || !imgsList.length) return;
-        const formDataPhase1 = new FormData();
-        formDataPhase1.append("phase", "1");
-        formDataPhase1.append("name", name);
-        formDataPhase1.append("price", price);
-        const resPhase1 = await fetch("/admin/api/product/upload", {
-            method: "POST",
-            body: formDataPhase1
-        })
-        const jsonPhase1 = await resPhase1.json();
-        if (!jsonPhase1.success) return;
-        const productId = jsonPhase1.productId as string;
-        for (const img of imgsList) {
-            const formDataPhase2 = new FormData()
-            formDataPhase2.append("phase", "2");
-            formDataPhase2.append("img", img);
-            formDataPhase2.append("product-id", productId);
-            const resPhase2 = await fetch("/admin/api/product/upload", {
+        uploading = true;
+        formMessage = '';
+
+        try {
+            const formDataPhase1 = new FormData();
+            formDataPhase1.append("phase", "1");
+            formDataPhase1.append("name", name);
+            formDataPhase1.append("price", price);
+            const resPhase1 = await fetch("/admin/api/product/upload", {
                 method: "POST",
-                body: formDataPhase2
+                body: formDataPhase1
             })
-            const jsonPhase2 = await resPhase2.json();
-            if (!jsonPhase2.success) return;
+            const jsonPhase1 = await resPhase1.json();
+            if (!jsonPhase1.success) {
+                formMessage = jsonPhase1.message || "Error al crear el producto";
+                return;
+            }
+            const productId = jsonPhase1.productId as string;
+
+            for (const img of imgsList) {
+                const url = await uploadToCloudinary(img);
+                const formDataPhase2 = new FormData();
+                formDataPhase2.append("phase", "2");
+                formDataPhase2.append("url", url);
+                formDataPhase2.append("product-id", productId);
+                const resPhase2 = await fetch("/admin/api/product/upload", {
+                    method: "POST",
+                    body: formDataPhase2
+                });
+                const jsonPhase2 = await resPhase2.json();
+                if (!jsonPhase2.success) {
+                    formMessage = jsonPhase2.message || "Error al guardar la imagen";
+                    return;
+                }
+            }
+
+            const formDataPhase3 = new FormData();
+            formDataPhase3.append("phase", "3");
+            const resPhase3 = await fetch("/admin/api/product/upload", {
+                method: "POST",
+                body: formDataPhase3
+            });
+            const jsonPhase3 = await resPhase3.json();
+            if (!jsonPhase3.success) return;
+            clearForm();
+            setProductPagination(jsonPhase3.pagination as ProductPagination);
+            toggleAddProductModalIsVisible(false);
+        } catch {
+            formMessage = "Error al subir las imágenes";
+        } finally {
+            uploading = false;
         }
-        const formDataPhase3 = new FormData();
-        formDataPhase3.append("phase", "3");
-        const resPhase3 = await fetch("/admin/api/product/upload", {
-            method: "POST",
-            body: formDataPhase3
-        });
-        const jsonPhase3 = await resPhase3.json();
-        if (!jsonPhase3.success) return;
-        clearForm();
-        setProductPagination(jsonPhase3.pagination as ProductPagination);
-        toggleAddProductModalIsVisible(false);
     }
 
     function clearForm () {
         name = "";
         price = "";
+        imgsList = [];
         if (inputImgs) inputImgs.value = "";
     }
-
-    // async function resizeImage (file: File, width = 800 ) {
-    //     const img = document.createElement("img");
-    //     img.src = URL.createObjectURL(file);
-    //     await img.decode();
-
-    //     const canvas = document.createElement("canvas");
-    //     const ratio = width / img.width;
-    //     canvas.width = width;
-    //     canvas.height = img.height * ratio;
-
-    //     await pica().resize(img, canvas);
-    //     const blob = await pica().toBlob(canvas, "image/webp", 0.8 );
-    // }
 
     $effect(() => {
         if (formMessage) {
@@ -123,25 +168,7 @@
 {#if addProductModalIsVisible }
     <div transition:fade={{duration: 200}}>
         <ContainerModal toggleModal={toggleAddProductModalIsVisible} visible={addProductModalIsVisible} cancelClick={true}>
-                <form id="add-product" action="?/add_product" method="post" use:enhance={({formElement, formData, action, cancel}) => {
-                    return async ({ result }) => {
-                        if (result.type === "failure") {
-                            if (result.data?.message) {
-                                formMessage = result.data.message as string;
-                            }
-                        }
-                        if (result.type === "success") {
-                            formElement.reset();
-                            if (result.data?.pagination) {
-                                console.log(result.data.pagination)
-                                setProductPagination(result.data.pagination as ProductPagination);
-                                toggleAddProductModalIsVisible(false);
-                            }
-                            // await goto("/admin", {invalidateAll: true});
-                        }
-                    }
-                }} 
-                enctype="multipart/form-data" 
+                <form id="add-product" method="post"
                 class="relative flex flex-col gap-2 bg-stone-900 border border-red-400 py-3 px-4 rounded-md max-w-full max-h-fit">
                     <div class="flex flex-col gap-2 place-items-center">
                         <label for="name">Nombre</label>
@@ -167,13 +194,12 @@
                         />
                     </div>
                     <div class="flex flex-col gap-2 place-items-center">
-                        <button type="button" class="border hover:text-red-500 focus:text-red-500 rounded-md p-2 cursor-pointer" 
-                        onfocus={(e) => {
-                            sendProduct();
-                            cancelFocus(e);
-                            }}
+                        <button type="button" disabled={uploading || !name || !price || !imgsList.length}
+                        class="border hover:text-red-500 focus:text-red-500 rounded-md p-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        onclick={()=>sendProduct()}
+                        onfocus={(e) => cancelFocus(e)}
                         >
-                            Agregar
+                            {uploading ? 'Subiendo...' : 'Agregar'}
                         </button>
                     </div>
                     {#if formMessage}
@@ -184,7 +210,7 @@
                     </div>
                     {/if}
                     <div role="button" tabindex="0" onkeydown={()=>{}}
-                    class="absolute top-2 right-2 hover:text-red-500 cursor-pointer" onclick="{() => toggleAddProductModalIsVisible(false)}">
+                    class="absolute top-2 right-2 hover:text-red-500 cursor-pointer" onclick={()=>toggleAddProductModalIsVisible(false)}>
                         <Icon icon="material-symbols:close-rounded" class="text-3xl" />
                     </div>
                 </form>

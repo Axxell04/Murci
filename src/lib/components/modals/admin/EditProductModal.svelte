@@ -1,30 +1,28 @@
 <script lang="ts">
 
-	import { enhance } from "$app/forms";
 	import type { ProductComplete, ProductPagination } from "$lib/interfaces/product";
 	import { fade, scale } from "svelte/transition";
-	import type { ActionData } from "../../../../routes/admin/$types";
 	import ContainerModal from "../ContainerModal.svelte";
 	import Icon from "@iconify/svelte";
-	import ImgsProductModal from "../ImgsProductModal.svelte";
 	import ImgsEditProductModal from "./ImgsEditProductModal.svelte";
-	import { onDestroy, onMount } from "svelte";
     import imageCompression from "browser-image-compression";
 
     interface Props {
         setProductPagination: (newProductPagination: ProductPagination) => void
+        setProductSelected?: (product: ProductComplete) => void
         productSelected?: ProductComplete
         toggleEditProductModalIsVisible: (visible?: boolean) => void
         editProductModalIsVisible: boolean
     }
 
-    let { setProductPagination, toggleEditProductModalIsVisible, editProductModalIsVisible, productSelected }: Props = $props();
+    let { setProductPagination, setProductSelected, toggleEditProductModalIsVisible, editProductModalIsVisible, productSelected }: Props = $props();
 
     // Form
     let formMessage = $state('')
     let name = $state("");
     let price = $state("");
     let imgsList: File[] = $state([]);
+    let uploading = $state(false);
 
     // onMount(() => {
     //     if (!productSelected) return;
@@ -38,6 +36,7 @@
             name = productSelected.product.name
             price = productSelected.product.price.toString()
             imgsList = []
+            listDelete = []
         }
     })
 
@@ -103,54 +102,126 @@
         return compressedFile;
     }
 
+    async function convertToWebP (file: File): Promise<File> {
+        const bitmap = await createImageBitmap(file);
+        const canvas = document.createElement('canvas');
+        canvas.width = bitmap.width;
+        canvas.height = bitmap.height;
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(bitmap, 0, 0);
+        bitmap.close();
+        return new Promise((resolve, reject) => {
+            canvas.toBlob(
+                (blob) => {
+                    if (!blob) return reject(new Error('WebP conversion failed'));
+                    resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.webp'), { type: 'image/webp' }));
+                },
+                'image/webp',
+                0.85
+            );
+        });
+    }
+
     async function handleFile (e: Event) {
         const target = e.target as HTMLInputElement;
         const files = target.files;
         if (!files || !files.length) return;
         imgsList = [];
         for (const file of files) {
-            imgsList.push(await compress(file));
+            const compressed = await compress(file);
+            imgsList.push(await convertToWebP(compressed));
         }
     }
 
+    async function uploadToCloudinary (file: File): Promise<string> {
+        const sigRes = await fetch("/api/cloudinary/signature");
+        if (!sigRes.ok) throw new Error("Failed to get upload signature");
+        const sig = await sigRes.json();
+
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("api_key", sig.api_key);
+        formData.append("timestamp", sig.timestamp);
+        formData.append("folder", sig.folder);
+        formData.append("signature", sig.signature);
+
+        const uploadRes = await fetch(
+            `https://api.cloudinary.com/v1_1/${sig.cloud_name}/image/upload`,
+            { method: "POST", body: formData }
+        );
+        if (!uploadRes.ok) throw new Error("Cloudinary upload failed");
+        const data = await uploadRes.json();
+        return data.secure_url;
+    }
+
     async function sendUpdate () {
-        const formDataPhase1 = new FormData();
-        formDataPhase1.append("phase", "1");
-        formDataPhase1.append("product_id", productSelected?.product.id as string);
-        formDataPhase1.append("name", name as string);
-        formDataPhase1.append("price", price as string);
-        const resPhase1 = await fetch("/admin/api/product/update", {
-            method: "POST",
-            body: formDataPhase1
-        });
-        const jsonPhase1 = await resPhase1.json();
-        if (!jsonPhase1.success) return;
-        for (const img of imgsList) {
-            const formDataPhase2 = new FormData();
-            formDataPhase2.append("phase", "2");
-            formDataPhase2.append("img", img);
-            formDataPhase2.append("product_id", productSelected?.product.id as string);
-            const resPhase2 = await fetch("/admin/api/product/update", {
+        uploading = true;
+        formMessage = '';
+        try {
+            // Phase 1: Update name/price
+            const formDataPhase1 = new FormData();
+            formDataPhase1.append("phase", "1");
+            formDataPhase1.append("product_id", productSelected?.product.id as string);
+            formDataPhase1.append("name", name as string);
+            formDataPhase1.append("price", price as string);
+            const resPhase1 = await fetch("/admin/api/product/update", {
                 method: "POST",
-                body: formDataPhase2
+                body: formDataPhase1
             });
-            const jsonPhase2 = await resPhase2.json();
-            if (!jsonPhase2.success) return;
+            const jsonPhase1 = await resPhase1.json();
+            if (!jsonPhase1.success) {
+                formMessage = jsonPhase1.message || "Error al actualizar el producto";
+                return;
+            }
+
+            // Phase 2: Upload new images to Cloudinary, then bind URL
+            for (const img of imgsList) {
+                const url = await uploadToCloudinary(img);
+                const formDataPhase2 = new FormData();
+                formDataPhase2.append("phase", "2");
+                formDataPhase2.append("url", url);
+                formDataPhase2.append("product_id", productSelected?.product.id as string);
+                const resPhase2 = await fetch("/admin/api/product/update", {
+                    method: "POST",
+                    body: formDataPhase2
+                });
+                const jsonPhase2 = await resPhase2.json();
+                if (!jsonPhase2.success) {
+                    formMessage = jsonPhase2.message || "Error al guardar la imagen";
+                    return;
+                }
+            }
+
+            // Phase 3: Delete removed images
+            const formDataPhase3 = new FormData();
+            formDataPhase3.append("phase", "3");        
+            formDataPhase3.append("product_id", productSelected?.product.id as string);
+            formDataPhase3.append("list_delete", JSON.stringify(listDeleteToForm));
+            const resPhase3 = await fetch("/admin/api/product/update", {
+                method: "POST",
+                body: formDataPhase3
+            });
+            const jsonPhase3 = await resPhase3.json();
+            if (!jsonPhase3.success) {
+                formMessage = jsonPhase3.message || "Error al eliminar imágenes";
+                return;
+            }
+            setProductPagination(jsonPhase3.pagination as ProductPagination);
+            // Update productSelected reference to the fresh object from new pagination
+            if (setProductSelected) {
+                const freshProduct = (jsonPhase3.pagination as ProductPagination).products.find(
+                    (p) => p.product.id === productSelected?.product.id
+                );
+                if (freshProduct) setProductSelected(freshProduct);
+            }
+            if (inputImgs) inputImgs.value = "";
+            toggleEditProductModalIsVisible(false);
+            clearList();
+        } catch {
+            formMessage = "Error al subir las imágenes";
+        } finally {
+            uploading = false;
         }
-        const formDataPhase3 = new FormData();
-        formDataPhase3.append("phase", "3");        
-        formDataPhase3.append("product_id", productSelected?.product.id as string);
-        formDataPhase3.append("list_delete", JSON.stringify(listDeleteToForm));
-        const resPhase3 = await fetch("/admin/api/product/update", {
-            method: "POST",
-            body: formDataPhase3
-        });
-        const jsonPhase3 = await resPhase3.json();
-        if (!jsonPhase3.success) return;
-        setProductPagination(jsonPhase3.pagination as ProductPagination);
-        if (inputImgs) inputImgs.value = "";
-        toggleEditProductModalIsVisible(false);
-        clearList();
     }
 
     $effect(() => {
@@ -172,26 +243,7 @@
 {#if editProductModalIsVisible }
     <div transition:fade={{duration: 200}}>
         <ContainerModal toggleModal={toggleEditProductModalIsVisible} visible={editProductModalIsVisible} cancelClick={true}>
-                <form id="edit-product" action="?/edit_product" method="post" use:enhance={({formElement, formData, action, cancel}) => {
-                    return async ({ result }) => {
-                        console.log(result)
-                        if (result.type === "failure") {
-                            if (result.data?.message) {
-                                formMessage = result.data.message as string;
-                            }
-                        } else if (result.type === "success") {
-                            formElement.reset();
-                            if (result.data?.pagination) {
-                                // console.log(result.data.products)
-                                setProductPagination(result.data.pagination as ProductPagination);
-                                toggleEditProductModalIsVisible(false);
-                                clearList();
-                            }
-                            // await goto("/admin", {invalidateAll: true});
-                        }
-                    }
-                }} 
-                enctype="multipart/form-data" 
+                <form id="edit-product"
                 class="relative flex flex-col gap-2 bg-stone-900 border border-red-400 py-5 px-10 rounded-md max-w-full max-h-fit">
                     <div class="flex flex-col gap-2 place-items-center">
                         <input type="hidden" name="product_id" value={!productSelected ? "" : (productSelected.product.id)}>
@@ -234,16 +286,15 @@
                         </button>
                     </div>
                     <div class="flex flex-col gap-2 place-items-center">
-                        <input type="text" hidden name="list_delete" 
+                        <input type="hidden" name="list_delete" 
                         value={JSON.stringify(listDeleteToForm)}
                         >
-                        <button type="button" class="border hover:text-red-500 focus:text-red-500 rounded-md p-2 cursor-pointer"
-                        onfocus={(e) => {
-                            sendUpdate();
-                            cancelFocus(e);
-                            }}
+                        <button type="button" disabled={uploading}
+                        class="border hover:text-red-500 focus:text-red-500 rounded-md p-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        onclick={()=>sendUpdate()}
+                        onfocus={(e) => cancelFocus(e)}
                         >
-                            Editar
+                            {uploading ? 'Subiendo...' : 'Editar'}
                         </button>
                     </div>
                     {#if formMessage}
@@ -254,7 +305,7 @@
                     </div>
                     {/if}
                     <div role="button" tabindex="0" onkeydown={()=>{}}
-                    class="absolute top-2 right-2 hover:text-red-500 cursor-pointer" onclick="{() => {toggleEditProductModalIsVisible(false)}}">
+                    class="absolute top-2 right-2 hover:text-red-500 cursor-pointer" onclick={()=>toggleEditProductModalIsVisible(false)}>
                         <Icon icon="material-symbols:close-rounded" class="text-3xl" />
                     </div>
                 </form>
