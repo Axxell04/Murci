@@ -28,7 +28,7 @@ export async function createSession(token: string, userId: string) {
 
 export async function validateSessionToken(token: string) {
 	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
-	const [result] = await db
+	const [result] = await getDb()
 		.select({
 			user: { id: table.user.id, username: table.user.username, admin: table.user.admin },
 			session: table.session
@@ -51,7 +51,7 @@ export async function validateSessionToken(token: string) {
 	const renewSession = Date.now() >= session.expiresAt.getTime() - DAY_IN_MS * 15;
 	if (renewSession) {
 		session.expiresAt = new Date(Date.now() + DAY_IN_MS * 30);
-		await db
+		await getDb()
 			.update(table.session)
 			.set({ expiresAt: session.expiresAt })
 			.where(eq(table.session.id, session.id));
