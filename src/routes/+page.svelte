@@ -365,7 +365,7 @@
             </div>
 		</div>
 	</section>
-    <section class="flex flex-wrap justify-center p-2 gap-3">
+    <section class="flex flex-wrap justify-center p-2 gap-5">
         {#each products as product (product.product.id)}
             <div in:scale={{delay: 100 * products.indexOf(product)}}>
                 <ProductCard {product} {toggleProductModalIsVisible} {productSelected} {selectThisProduct} />                
