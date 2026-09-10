@@ -1,96 +1,95 @@
-import { sql } from 'drizzle-orm';
-import { sqliteTable, text, integer, real,  } from 'drizzle-orm/sqlite-core';
+import { pgTable, text, integer, boolean, timestamp, doublePrecision, jsonb } from 'drizzle-orm/pg-core';
 
 // USUARIO
 
-export const user = sqliteTable('user', {
+export const user = pgTable('user', {
 	id: text('id').primaryKey(),
 	age: integer('age'),
 	username: text('username').notNull().unique(),
 	passwordHash: text('password_hash').notNull(),
-	admin: integer('admin', {mode: "boolean"}).notNull().default(false)
+	admin: boolean('admin').notNull().default(false)
 });
 
-export const session = sqliteTable('session', {
+export const session = pgTable('session', {
 	id: text('id').primaryKey(),
 	userId: text('user_id')
 		.notNull()
 		.references(() => user.id),
-	expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull()
+	expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull()
 });
 
-export const user_token = sqliteTable('user_token', {
+export const user_token = pgTable('user_token', {
 	id: text('id').primaryKey(),
 	text: text('text').notNull(),
-	active: integer('active', {mode: "boolean"}).notNull().default(true)	
-})
+	active: boolean('active').notNull().default(true)
+});
 
 // NEGOCIO
 
-export const product = sqliteTable('product', {
+export const product = pgTable('product', {
 	id: text('id').primaryKey(),
 	name: text('name').notNull(),
-	price: real('price').notNull(),
-	createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`CURRENT_TIMESTAMP`),
-})
+	price: doublePrecision('price').notNull(),
+	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow()
+});
 
-export const img = sqliteTable('img', {
+export const img = pgTable('img', {
 	id: text('id').primaryKey(),
 	url: text('url').notNull(),
 	productId: text('product_id').notNull().references(() => product.id)
-})
+});
 
-export const catalog = sqliteTable('catalog', {
+export const catalog = pgTable('catalog', {
 	id: text('id').primaryKey(),
 	name: text('name').notNull(),
 	description: text('description'),
-	createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`CURRENT_TIMESTAMP`)
-})
+	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow()
+});
 
-export const productCatalog = sqliteTable('product_catalog', {
+export const productCatalog = pgTable('product_catalog', {
 	id: text('id').primaryKey(),
 	productId: text('product_id').notNull().references(() => product.id),
 	catalogId: text('catalog_id').notNull().references(() => catalog.id)
-})
+});
 
-export const order = sqliteTable('order', {
+export const order = pgTable('order', {
 	id: text('id').primaryKey(),
-	content: text('content', { mode: 'json' }).notNull(),
-	completed: integer('completed', { mode: 'boolean' }).notNull().default(false),
+	content: jsonb('content').notNull(),
+	completed: boolean('completed').notNull().default(false),
 	clientName: text('client_name').notNull(),
-	createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`CURRENT_TIMESTAMP`),
+	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
 	revenueId: text('revenue_id').references(() => revenue.id)
-})
+});
 
 // BALANCE
-export const revenue = sqliteTable('revenue', {
+export const revenue = pgTable('revenue', {
 	id: text('id').primaryKey(),
-	value: real('value').notNull(),
+	value: doublePrecision('value').notNull(),
 	reason: text('reason'),
-	createdAt: integer('created_at', { mode: 'timestamp' }).notNull()
-})
+	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull()
+});
 
-export const cost = sqliteTable('cost', {
+export const cost = pgTable('cost', {
 	id: text('id').primaryKey(),
-	value: real('value').notNull(),
+	value: doublePrecision('value').notNull(),
 	reason: text('reason'),
-	createdAt: integer('created_at', { mode: 'timestamp' }).notNull()
-})
+	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull()
+});
 
-export const expense = sqliteTable('expense', {
+export const expense = pgTable('expense', {
 	id: text('id').primaryKey(),
-	value: real('value').notNull(),
+	value: doublePrecision('value').notNull(),
 	reason: text('reason'),
-	createdAt: integer('created_at', { mode: 'timestamp' }).notNull()
-})
+	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull()
+});
 
 // CONTACTO
-export const contact = sqliteTable('contact', {
+export const contact = pgTable('contact', {
 	id: text('id').primaryKey(),
 	icon: text('icon').notNull(),
 	text: text('text').notNull(),
 	url: text('url').notNull()
-})
+});
 
 export type Session = typeof session.$inferSelect;
 
@@ -115,3 +114,4 @@ export type Revenue = typeof revenue.$inferInsert;
 export type Cost = typeof cost.$inferInsert;
 
 export type Expense = typeof expense.$inferInsert;
+

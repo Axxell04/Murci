@@ -1,0 +1,47 @@
+﻿schema: spec-driven
+
+context: |
+  Tech stack: SvelteKit 2, Svelte 5 (Runes), Vite 6, TypeScript 5, Tailwind CSS v4, Drizzle ORM (LibSQL/SQLite).
+  Architecture: SvelteKit fullstack app with server routes, actions, and Drizzle data layer.
+  Testing: No test runner configured (strict_tdd disabled).
+  Style: ESLint 9 (flat config), Prettier with Svelte and Tailwind plugins, svelte-check.
+
+strict_tdd: false
+
+testing:
+  strict_tdd: false
+  runner: null
+  command: null
+  coverage_command: null
+  layers:
+    unit: false
+    integration: false
+    e2e: false
+  quality:
+    linter: "npm run lint"
+    type_checker: "npm run check"
+    formatter: "npm run format"
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Include sequence diagrams for complex flows
+    - Document architecture decisions with rationale
+  tasks:
+    - Group by phase, use hierarchical numbering
+    - Keep tasks completable in one session
+  apply:
+    guidelines:
+      - Follow existing code patterns
+    tdd: false
+    test_command: ""
+  verify:
+    test_command: ""
+    build_command: "npm run build"
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas

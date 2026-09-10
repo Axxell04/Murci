@@ -1,7 +1,7 @@
-import { createClient } from "@libsql/client";
+import postgres from "postgres";
 import { config } from "dotenv";
 import * as table from "../src/lib/server/db/schema.js";
-import { drizzle } from "drizzle-orm/libsql";
+import { drizzle } from "drizzle-orm/postgres-js";
 import fs from "fs";
 
 // Cargar variables de entorno desde el archivo .env
@@ -11,7 +11,7 @@ if (!process.env.DATABASE_URL) {
     throw new Error('DATABASE_URL is not set');
 }
 
-const client = createClient({ url: process.env.DATABASE_URL })
+const client = postgres(process.env.DATABASE_URL, { prepare: false });
 const db = drizzle(client);
 
 function reviver (key, value) {
@@ -42,7 +42,12 @@ async function restore () {
     } catch (error) {
         // console.log(error)
         throw new Error(`Error al realizar la restauración de datos: ${error}`);
+    } finally {
+        await client.end();
     }
 }
 
-restore();
+restore().catch((e) => {
+    console.error(e);
+    process.exit(1);
+});

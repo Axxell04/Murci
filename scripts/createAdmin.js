@@ -1,8 +1,8 @@
 import { config } from 'dotenv';
 import { hash } from '@node-rs/argon2';
 import { encodeBase32LowerCase } from '@oslojs/encoding';
-import { createClient } from '@libsql/client';
-import { drizzle } from 'drizzle-orm/libsql';
+import postgres from 'postgres';
+import { drizzle } from 'drizzle-orm/postgres-js';
 import * as table from '../src/lib/server/db/schema.js';
 
 // Cargar variables de entorno desde el archivo .env
@@ -12,7 +12,7 @@ if (!process.env.DATABASE_URL) {
     throw new Error('DATABASE_URL is not set');
 }
 
-const client = createClient({ url: process.env.DATABASE_URL });
+const client = postgres(process.env.DATABASE_URL, { prepare: false });
 const db = drizzle(client);
 
 async function createAdmin(username, password) {
@@ -67,9 +67,15 @@ if (!process.env.ADMIN_USERNAME || !process.env.ADMIN_PASS) {
 const usernameList = process.env.ADMIN_USERNAME.split(',');
 const passList = process.env.ADMIN_PASS.split(',');
 
-for (const username of usernameList) {
-    createAdmin(username, passList[usernameList.indexOf(username)]).catch((e) => {
-        console.error('An error occurred:', e);
-        process.exit(1);
-    });
+async function main() {
+    for (const username of usernameList) {
+        await createAdmin(username, passList[usernameList.indexOf(username)]);
+    }
+    await client.end();
 }
+
+main().catch((e) => {
+    console.error('An error occurred:', e);
+    process.exit(1);
+});
+

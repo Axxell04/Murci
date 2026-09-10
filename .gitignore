@@ -34,3 +34,7 @@ vite.config.ts.timestamp-*
 
 # SQLite
 *.db
+
+# Gentle AI / ATL
+.atl/
+

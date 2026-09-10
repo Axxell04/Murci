@@ -1,7 +1,7 @@
-import { createClient } from "@libsql/client";
+import postgres from "postgres";
 import { config } from "dotenv";
 import * as table from "../src/lib/server/db/schema.js";
-import { drizzle } from "drizzle-orm/libsql";
+import { drizzle } from "drizzle-orm/postgres-js";
 import fs from "fs";
 import { eq, not } from "drizzle-orm";
 
@@ -12,7 +12,7 @@ if (!process.env.DATABASE_URL) {
     throw new Error('DATABASE_URL is not set');
 }
 
-const client = createClient({ url: process.env.DATABASE_URL })
+const client = postgres(process.env.DATABASE_URL, { prepare: false });
 const db = drizzle(client);
 
 async function backup () {
@@ -33,7 +33,11 @@ async function backup () {
     if (!fs.existsSync("backups/")) {
         fs.mkdirSync("backups/");
     }
-    fs.writeFileSync("backups/data.json", JSON.stringify(data, null, 2))
+    fs.writeFileSync("backups/data.json", JSON.stringify(data, null, 2));
+    await client.end();
 }
 
-backup();
+backup().catch((e) => {
+    console.error('Backup error:', e);
+    process.exit(1);
+});

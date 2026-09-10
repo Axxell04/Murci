@@ -1,6 +1,5 @@
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "../$types";
-import fs from "fs";
 import { bindImg, createProduct, getImgs, getProducts } from "$lib/server/product";
 import { updateProduct } from "$lib/server/product";
 
@@ -24,17 +23,16 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         try {
             await updateProduct({ product_id, name, price });
             return json({ success: true });
-        } catch (error) {
-            console.log(error);
+        } catch {
             return json({ success: false, message: 'Internal server error' });
         }
     } else if (phase === "2") {
-        const img = formData.get("img") as File | null;
+        const url = formData.get("url") as string;
         const product_id = formData.get("product_id") as string;   
 
-        if (!product_id || !img) return json({ success: false, message: "Error el los parámetros de la petición" });
+        if (!product_id || !url) return json({ success: false, message: "Error el los parámetros de la petición" });
 
-        await bindImg(product_id, img);
+        await bindImg(product_id, url);
         return json({ success: true });
     } else if (phase === "3") {
         const product_id = formData.get("product_id") as string;

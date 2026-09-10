@@ -1,0 +1,24 @@
+change: migrate-sqlite-to-supabase-postgres
+phase: verify
+artifact_store: openspec
+artifacts:
+  proposal: true
+  specs: true
+  design: true
+  tasks: true
+  verify: true
+tasks_progress:
+  completed:
+    - 1.1
+    - 1.2
+    - 1.3
+    - 2.1
+    - 2.2
+    - 2.3
+    - 3.1
+    - 3.2
+    - 4.1
+    - 4.2
+    - 4.3
+  pending: []
+last_updated: "2026-09-08"

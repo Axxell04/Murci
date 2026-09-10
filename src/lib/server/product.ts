@@ -1,10 +1,16 @@
 import * as table from '$lib/server/db/schema'
-import { encodeBase32LowerCase, encodeBase32UpperCase } from '@oslojs/encoding';
+import { encodeBase32LowerCase } from '@oslojs/encoding';
 import { db } from '$lib/server/db';
-import path from 'path';
-import { promises as fs } from 'fs';
+import { v2 as cloudinary } from 'cloudinary';
+import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } from '$env/static/private';
 import { and, desc, eq, like } from 'drizzle-orm';
 import { addProductToCatalog } from './catalog';
+
+cloudinary.config({
+	cloud_name: CLOUDINARY_CLOUD_NAME,
+	api_key: CLOUDINARY_API_KEY,
+	api_secret: CLOUDINARY_API_SECRET
+});
 
 type GetProductsOptions = {
     page?: number;
@@ -24,39 +30,23 @@ export async function createProduct(name: string, price: number, catalogId?: str
     
     await db.insert(table.product).values(product).execute();
 
-    // if (imgs.length > 0) {
-    //     for (const img of Array.from(imgs)) {
-    //         const imgId = generateId();
-    //         const imgName = `${generateRandomName()}.webp`;
-    //         const imgURL = await handleImage(img, imgName);
-
-    //         await db.insert(table.img).values({
-    //             id: imgId,
-    //             url: imgURL,
-    //             productId: productId
-    //         }).execute();
-    //     }
-    // }
     if (catalogId) {
         await addProductToCatalog(productId, catalogId);
     }
     return productId;
 }
 
-export async function bindImg (productId: string, img: File) {    
+export async function bindImg (productId: string, url: string) {    
     const imgId = generateId();
-    const imgName = `${generateRandomName()}.webp`;
-    const imgURL = await handleImage(img, imgName);
 
     await db.insert(table.img).values({
         id: imgId,
-        url: imgURL,
+        url: url,
         productId: productId
     }).execute();
 }
 
 export async function getProducts (options: GetProductsOptions = {}) {
-    // console.log('CatalogID: ', catalogId)
     const { page = 1, limit = 4, search, catalogId } = options;
     const offset = (page - 1) * limit;
     let products: table.Product[];
@@ -163,7 +153,6 @@ export async function getImgs (productId: string) {
 // Complementary Functions
 
 export async function deleteImg (id: string, img?: table.Img) {
-    console.log(img);
     if (typeof img === 'undefined') {
         const imgs = await db.select().from(table.img).where(eq(table.img.id, id)).execute();
         if (imgs.length === 0) { return };
@@ -171,12 +160,12 @@ export async function deleteImg (id: string, img?: table.Img) {
     }
     if (!img) { return }
     try {
-        const filePath = path.join(process.cwd(), 'uploads', img.url);
-        await fs.unlink(filePath);
-        await db.delete(table.img).where(eq(table.img.id, id)).execute();
-    } catch (error) {
-        console.log(error)
+        const publicId = extractPublicId(img.url);
+        await cloudinary.uploader.destroy(publicId);
+    } catch {
+        // Cloudinary destroy failed — DB record still deleted (REQ-IMG-011)
     }
+    await db.delete(table.img).where(eq(table.img.id, id)).execute();
 }
 
 function generateId () {
@@ -185,30 +174,10 @@ function generateId () {
     return id;
 }
 
-function generateRandomName () {
-    const bytes = crypto.getRandomValues(new Uint8Array(15));
-    const name = encodeBase32UpperCase(bytes);
-    return name;
-}
-
-async function handleImage (img: File, imgName: string) {    
-    const uploadsDir = path.join(process.cwd(), 'uploads', 'imgs');
-    await checkDir(uploadsDir);
-
-    const buffer = await img.arrayBuffer();
-    const filePath = path.join(uploadsDir, imgName);
-
-    await fs.writeFile(filePath, Buffer.from(buffer));
-
-    const imgURL = `/imgs/${imgName}`;
-
-    return imgURL;
-}
-
-async function checkDir (path: string) {
-    try {
-        await fs.access(path)
-    } catch {
-        await fs.mkdir(path, { recursive: true })
-    }
+function extractPublicId (url: string): string {
+    const uploadIndex = url.indexOf('/upload/');
+    if (uploadIndex === -1) return url;
+    const afterUpload = url.slice(uploadIndex + '/upload/'.length);
+    const withoutVersion = afterUpload.replace(/^v\d+\//, '');
+    return withoutVersion.replace(/\.[^/.]+$/, '');
 }

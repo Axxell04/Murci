@@ -1,6 +1,5 @@
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "../$types";
-import fs from "fs";
 import { bindImg, createProduct, getProducts } from "$lib/server/product";
 
 export const POST: RequestHandler = async ({ request, locals }) => {
@@ -20,19 +19,14 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         try {
             const productId = await createProduct(name, price, catalogId);
             return json({ success: true, productId })
-        } catch (error) {
-            console.log(error);
+        } catch {
             return json({ success: false, message: 'Internal server error' });
         }
     } else if (phase === "2") {
-        const img = formData.get("img") as File | null;
+        const url = formData.get("url") as string;
         const productId = formData.get("product-id") as string;
-        if (!img) return json({ success: false, message: "Parámetro 'img' no encontrado" });
-        await bindImg(productId, img);
-        // const arrayBuffer = await img.arrayBuffer();
-        // const buffer = Buffer.from(arrayBuffer);
-        // fs.mkdirSync("upimg/", { recursive: true });
-        // fs.writeFileSync(`upimg/${index}.webp`, buffer);
+        if (!url) return json({ success: false, message: "Parámetro 'url' no encontrado" });
+        await bindImg(productId, url);
         return json({ success: true });
     } else if (phase === "3") {
         const pagination = await getProducts({catalogId});

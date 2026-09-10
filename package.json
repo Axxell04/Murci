@@ -52,7 +52,6 @@
 		"vite": "^6.0.0"
 	},
 	"dependencies": {
-		"@libsql/client": "^0.14.0",
 		"@node-rs/argon2": "^2.0.2",
 		"@oslojs/crypto": "^1.0.1",
 		"@oslojs/encoding": "^1.1.0",
@@ -60,10 +59,12 @@
 		"adm-zip": "^0.5.16",
 		"autoprefixer": "^10.4.21",
 		"browser-image-compression": "^2.0.2",
+		"cloudinary": "^2.11.0",
 		"dotenv": "^16.4.7",
 		"drizzle-orm": "^0.38.4",
 		"jszip": "^3.10.1",
 		"nodemailer": "^6.10.0",
-		"pica": "^9.0.1"
+		"pica": "^9.0.1",
+		"postgres": "^3.4.9"
 	}
 }
