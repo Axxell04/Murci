@@ -1,6 +1,6 @@
 import * as table from '$lib/server/db/schema'
 import { encodeBase32LowerCase } from '@oslojs/encoding';
-import { db } from '$lib/server/db';
+import { getDb } from '$lib/server/db';
 import { v2 as cloudinary } from 'cloudinary';
 import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } from '$env/static/private';
 import { and, desc, eq, like } from 'drizzle-orm';
@@ -28,7 +28,7 @@ export async function createProduct(name: string, price: number, catalogId?: str
         createdAt: new Date()
     }
     
-    await db.insert(table.product).values(product).execute();
+    await getDb().insert(table.product).values(product).execute();
 
     if (catalogId) {
         await addProductToCatalog(productId, catalogId);
@@ -39,7 +39,7 @@ export async function createProduct(name: string, price: number, catalogId?: str
 export async function bindImg (productId: string, url: string) {    
     const imgId = generateId();
 
-    await db.insert(table.img).values({
+    await getDb().insert(table.img).values({
         id: imgId,
         url: url,
         productId: productId
@@ -54,8 +54,8 @@ export async function getProducts (options: GetProductsOptions = {}) {
     if (search) {
         const searchPattern = `%${search}%`
         products= !catalogId 
-                            ? await db.select().from(table.product).where(like(table.product.name, searchPattern)).limit(limit).offset(offset).orderBy(desc(table.product.createdAt)).execute() 
-                            : await db.select({
+                            ? await getDb().select().from(table.product).where(like(table.product.name, searchPattern)).limit(limit).offset(offset).orderBy(desc(table.product.createdAt)).execute() 
+                            : await getDb().select({
                                 id: table.product.id,
                                 name: table.product.name,
                                 price: table.product.price,
@@ -63,8 +63,8 @@ export async function getProducts (options: GetProductsOptions = {}) {
                             }).from(table.product).innerJoin(table.productCatalog, eq(table.product.id, table.productCatalog.productId)).where(and(eq(table.productCatalog.catalogId, catalogId ?? ''), like(table.product.name, searchPattern))).limit(limit).offset(offset).orderBy(desc(table.product.createdAt)).execute()
     } else {
         products= !catalogId 
-                            ? await db.select().from(table.product).limit(limit).offset(offset).orderBy(desc(table.product.createdAt)).execute() 
-                            : await db.select({
+                            ? await getDb().select().from(table.product).limit(limit).offset(offset).orderBy(desc(table.product.createdAt)).execute() 
+                            : await getDb().select({
                                 id: table.product.id,
                                 name: table.product.name,
                                 price: table.product.price,
@@ -88,8 +88,8 @@ export async function getProducts (options: GetProductsOptions = {}) {
     if (search) {
         const searchPattern = `%${search}%`;
         totalProducts = !catalogId
-            ? (await db.select().from(table.product).where(like(table.product.name, searchPattern)).execute()).length 
-            : (await db.select({
+            ? (await getDb().select().from(table.product).where(like(table.product.name, searchPattern)).execute()).length 
+            : (await getDb().select({
                 id: table.product.id,
                 name: table.product.name,
                 price: table.product.price,
@@ -98,8 +98,8 @@ export async function getProducts (options: GetProductsOptions = {}) {
             
     } else {
         totalProducts = !catalogId
-            ? (await db.select().from(table.product).execute()).length 
-            : (await db.select({
+            ? (await getDb().select().from(table.product).execute()).length 
+            : (await getDb().select({
                 id: table.product.id,
                 name: table.product.name,
                 price: table.product.price,
@@ -126,7 +126,7 @@ type UpdateProductOptions = {
 
 export async function updateProduct (options: UpdateProductOptions) {
     const { product_id, name, price, imgsDelete } = options;
-    if (typeof name !== "undefined" && typeof price !== "undefined") await db.update(table.product).set({name: name, price: price}).where(eq(table.product.id, product_id)).execute();
+    if (typeof name !== "undefined" && typeof price !== "undefined") await getDb().update(table.product).set({name: name, price: price}).where(eq(table.product.id, product_id)).execute();
     if (typeof imgsDelete !== 'undefined') {
         if (imgsDelete.length > 0) {
             for (const imgId of imgsDelete) {
@@ -141,12 +141,12 @@ export async function deleteProduct (id: string) {
     for (const img of imgs) {
         await deleteImg(img.id)
     }
-    // await db.delete(table.img).where(eq(table.img.productId, id)).execute();
-    await db.delete(table.product).where(eq(table.product.id, id)).execute();
+    // await getDb().delete(table.img).where(eq(table.img.productId, id)).execute();
+    await getDb().delete(table.product).where(eq(table.product.id, id)).execute();
 }
 
 export async function getImgs (productId: string) {
-    const imgs = await db.select().from(table.img).where(eq(table.img.productId, productId)).execute();
+    const imgs = await getDb().select().from(table.img).where(eq(table.img.productId, productId)).execute();
     return imgs;
 }
 
@@ -154,7 +154,7 @@ export async function getImgs (productId: string) {
 
 export async function deleteImg (id: string, img?: table.Img) {
     if (typeof img === 'undefined') {
-        const imgs = await db.select().from(table.img).where(eq(table.img.id, id)).execute();
+        const imgs = await getDb().select().from(table.img).where(eq(table.img.id, id)).execute();
         if (imgs.length === 0) { return };
         img = imgs[0];
     }
@@ -165,7 +165,7 @@ export async function deleteImg (id: string, img?: table.Img) {
     } catch {
         // Cloudinary destroy failed — DB record still deleted (REQ-IMG-011)
     }
-    await db.delete(table.img).where(eq(table.img.id, id)).execute();
+    await getDb().delete(table.img).where(eq(table.img.id, id)).execute();
 }
 
 function generateId () {

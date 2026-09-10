@@ -1,6 +1,6 @@
 import * as table from '$lib/server/db/schema'
 import { generateId } from "$lib/server/functions";
-import { db } from "$lib/server/db"
+import { getDb } from "$lib/server/db"
 import { eq, jaccardDistance } from 'drizzle-orm';
 
 type GetOrderOptions = {
@@ -11,7 +11,7 @@ type GetOrderOptions = {
 }
 
 export async function checkOrderExists (cod: string) {
-    const [order] = await db.select().from(table.order).where(eq(table.order.id, cod)).execute();
+    const [order] = await getDb().select().from(table.order).where(eq(table.order.id, cod)).execute();
     console.log(order);
     if (order) return true;
     return false;
@@ -26,7 +26,7 @@ export async function createOrder (content: object, clientName: string) {
         createdAt: new Date(),
     }
 
-    await db.insert(table.order).values(order).execute();
+    await getDb().insert(table.order).values(order).execute();
     return orderId;
 }
 
@@ -35,18 +35,18 @@ export async function getOrders (options: GetOrderOptions = {}) {
     const offset = (page - 1) * limit;
     let orders: table.Order[] = []
     if (cod) {
-        orders = await db.select().from(table.order).where(eq(table.order.id, cod)).execute();
+        orders = await getDb().select().from(table.order).where(eq(table.order.id, cod)).execute();
         page = 0;
     } else {
         orders = typeof completed === 'undefined' 
-            ? await db.select().from(table.order).limit(limit).offset(offset).orderBy(table.order.createdAt).execute()
-            : await db.select().from(table.order).where(eq(table.order.completed, completed)).limit(limit).offset(offset).orderBy(table.order.createdAt).execute()
+            ? await getDb().select().from(table.order).limit(limit).offset(offset).orderBy(table.order.createdAt).execute()
+            : await getDb().select().from(table.order).where(eq(table.order.completed, completed)).limit(limit).offset(offset).orderBy(table.order.createdAt).execute()
 
     }
     
     const totalOrders = typeof completed === 'undefined'
-        ? (await db.select().from(table.order).execute()).length 
-        : (await db.select().from(table.order).where(eq(table.order.completed, completed)).execute()).length
+        ? (await getDb().select().from(table.order).execute()).length 
+        : (await getDb().select().from(table.order).where(eq(table.order.completed, completed)).execute()).length
     const totalPages = Math.ceil(totalOrders / limit);
 
     return {
@@ -58,30 +58,30 @@ export async function getOrders (options: GetOrderOptions = {}) {
 
 export async function updateOrder (id: string, content?: object, completed?: boolean, revenueId?: string | null, totalValue?: number | undefined) {
     if (typeof completed !== 'undefined' && typeof revenueId === 'string') {
-        await db.update(table.order).set({completed, revenueId}).where(eq(table.order.id, id)).execute();
+        await getDb().update(table.order).set({completed, revenueId}).where(eq(table.order.id, id)).execute();
     } else if (typeof completed !== 'undefined' && revenueId === null) {
-        const [order] = await db.select().from(table.order).where(eq(table.order.id, id));
-        await db.update(table.order).set({completed, revenueId}).where(eq(table.order.id, id)).execute();
+        const [order] = await getDb().select().from(table.order).where(eq(table.order.id, id));
+        await getDb().update(table.order).set({completed, revenueId}).where(eq(table.order.id, id)).execute();
         if (order.revenueId) {
-            await db.delete(table.revenue).where(eq(table.revenue.id, order.revenueId));
+            await getDb().delete(table.revenue).where(eq(table.revenue.id, order.revenueId));
         }
     } else if (typeof content !== 'undefined' && typeof completed !== 'undefined') {
-        await db.update(table.order).set({content, completed}).where(eq(table.order.id, id)).execute();
+        await getDb().update(table.order).set({content, completed}).where(eq(table.order.id, id)).execute();
     } else if (typeof content !== 'undefined' && typeof totalValue !== 'undefined') {
-        const [order] = await db.select().from(table.order).where(eq(table.order.id, id)).execute();
+        const [order] = await getDb().select().from(table.order).where(eq(table.order.id, id)).execute();
         if (order.revenueId) {
-            await db.update(table.revenue).set({value: totalValue}).where(eq(table.revenue.id, order.revenueId)).execute();
+            await getDb().update(table.revenue).set({value: totalValue}).where(eq(table.revenue.id, order.revenueId)).execute();
         }
-        await db.update(table.order).set({content}).where(eq(table.order.id, id)).execute();
+        await getDb().update(table.order).set({content}).where(eq(table.order.id, id)).execute();
     } else if (typeof completed !== 'undefined') {
-        await db.update(table.order).set({completed}).where(eq(table.order.id, id)).execute();
+        await getDb().update(table.order).set({completed}).where(eq(table.order.id, id)).execute();
     }
 }
 
 export async function deleteOrder (id: string) {
-    const [order] = await db.select().from(table.order).where(eq(table.order.id, id)).execute();
+    const [order] = await getDb().select().from(table.order).where(eq(table.order.id, id)).execute();
     if (order.revenueId) {
-        await db.delete(table.revenue).where(eq(table.order.revenueId, order.revenueId));
+        await getDb().delete(table.revenue).where(eq(table.order.revenueId, order.revenueId));
     }
-    await db.delete(table.order).where(eq(table.order.id, id));
+    await getDb().delete(table.order).where(eq(table.order.id, id));
 }

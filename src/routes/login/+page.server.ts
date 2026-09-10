@@ -1,6 +1,6 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
-import { db } from "$lib/server/db";
+import { getDb } from "$lib/server/db";
 import * as auth from '$lib/server/auth'
 import * as table from '$lib/server/db/schema'
 import { eq } from "drizzle-orm";
@@ -61,7 +61,7 @@ export const actions: Actions = {
             return fail(400, { message: LOGIN_ERROR });
         }
 
-        const results = await db.select().from(table.user).where(eq(table.user.username, username));
+        const results = await getDb().select().from(table.user).where(eq(table.user.username, username));
         const existingUser = results.at(0);
 
         if (!existingUser) {

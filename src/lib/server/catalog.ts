@@ -1,6 +1,6 @@
 import * as table from '$lib/server/db/schema';
 import { encodeBase32LowerCase } from '@oslojs/encoding';
-import { db } from '$lib/server/db'
+import { getDb } from '$lib/server/db'
 import { and, eq } from 'drizzle-orm';
 
 export async function createCatalog (name: string, description?: string) {
@@ -12,26 +12,26 @@ export async function createCatalog (name: string, description?: string) {
         createdAt: new Date()
     }
 
-    await db.insert(table.catalog).values(catalog).execute();
+    await getDb().insert(table.catalog).values(catalog).execute();
 
 }
 
 export async function getCatalogs () {
-    const catalogs = await db.select().from(table.catalog).execute();
+    const catalogs = await getDb().select().from(table.catalog).execute();
     return catalogs;
 }
 
 export async function updateCatalog (id: string, name: string, description: string) {
-    await db.update(table.catalog).set({name: name, description: description}).where(eq(table.catalog.id, id)).execute();
+    await getDb().update(table.catalog).set({name: name, description: description}).where(eq(table.catalog.id, id)).execute();
 }
 
 export async function deleteCatalog (id: string) {
-    await db.delete(table.productCatalog).where(eq(table.productCatalog.catalogId, id)).execute();
-    await db.delete(table.catalog).where(eq(table.catalog.id, id));
+    await getDb().delete(table.productCatalog).where(eq(table.productCatalog.catalogId, id)).execute();
+    await getDb().delete(table.catalog).where(eq(table.catalog.id, id));
 }
 
 export async function validateCatalog (id: string) {
-    const exist = (await db.select().from(table.catalog).where(eq(table.catalog.id, id)).execute()).length;
+    const exist = (await getDb().select().from(table.catalog).where(eq(table.catalog.id, id)).execute()).length;
     if (!exist) {
         return false;
     }
@@ -46,11 +46,11 @@ export async function addProductToCatalog (productId: string, catalogId: string)
         productId: productId,
         catalogId: catalogId
     }
-    await db.insert(table.productCatalog).values(productCatalog).execute();
+    await getDb().insert(table.productCatalog).values(productCatalog).execute();
 }
 
 export async function removeProductToCatalog (productId: string, catalogId: string) {
-    await db.delete(table.productCatalog).where(and(eq(table.productCatalog.productId, productId), eq(table.productCatalog.catalogId, catalogId))).execute();
+    await getDb().delete(table.productCatalog).where(and(eq(table.productCatalog.productId, productId), eq(table.productCatalog.catalogId, catalogId))).execute();
 }
 
 
